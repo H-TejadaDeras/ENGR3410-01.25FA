@@ -1,41 +1,92 @@
-/*  RGB LED - Mini Project 1
+/*  Simple RGB LED - Mini Project 1
  *  Henry Tejada Deras - 09-12-2025
  */ 
 
 module top(
     input logic clk, 
-    output logic RBG_R,
-    output logic RBG_G,
-    output logic RBG_B
+    output logic RGB_R,
+    output logic RGB_G,
+    output logic RGB_B
     );
 
     // Variable Declarations
     parameter BLINK_INTERVAL = 2000000; // CLK frequency is 12 MHz, so 2,000,000 cycles is 1/6 s
     logic [$clog2(BLINK_INTERVAL) - 1:0] count = 0;
+    logic red_led, green_led, blue_led;
 
     // Initial State Declarations
     initial begin
         RBG_R = 1'b1;
-        RBG_G = 1'b0;
-        RBG_B = 1'b0;
+        RGB_G = 1'b0;
+        RGB_B = 1'b0;
     end
+
+    assign RGB_R = ~red_led;
+    assign RGB_G = ~green_led;
+    assign RGB_B = ~blue_led;
 
     // Counter Logic
     always_ff @(posedge clk) begin
         if (count == BLINK_INTERVAL - 1) begin
             count <= 0;
-            LED <= ~LED; // TODO: Trigger change in state
+
+            led_controller U1(
+            .i_RGB_R(~RGB_R), 
+            .i_RGB_G(~RGB_G), 
+            .i_RGB_B(~RGB_B),
+            .o_RBG_R(red_led), 
+            .o_RBG_G(green_led),
+            .o_RBG_B(blue_led)
+            );
         end
         else begin
             count <= count + 1;
         end
     end
-
 endmodule
 
-module state_machine(
-    input logic state,
-    output logic RBG_R,
-    output logic RBG_G,
-    output logic RBG_B
-)
+module led_controller #(
+    // LED Controlling Logic
+    input logic i_RGB_R,
+    input logic i_RGB_G,
+    input logic i_RGB_B,
+    output logic o_RBG_R,
+    output logic o_RBG_G,
+    output logic o_RBG_B
+);
+    // Variable Initialization
+    o_RBG_R = 1'b0;
+    o_RBG_G = 1'b0;
+    o_RBG_B = 1'b0;
+
+    if (i_RGB_R == 1'b1 && i_RGB_G == 1'b0 && i_RGB_B == 1'b0) begin // Red -> Yellow
+        o_RBG_R <= 1'b1;
+        o_RBG_G <= 1'b1;
+        o_RBG_B <= 1'b0;
+    end
+    else if (i_RGB_R == 1'b1 && i_RGB_G == 1'b1 && i_RGB_B == 1'b0) begin // Yellow -> Green
+        o_RBG_R <= 1'b0;
+        o_RBG_G <= 1'b1;
+        o_RBG_B <= 1'b0;
+    end
+    else if (i_RGB_R == 1'b0 && i_RGB_G == 1'b1 && i_RGB_B == 1'b0) begin // Green -> Cyan
+        o_RBG_R <= 1'b0;
+        o_RBG_G <= 1'b1;
+        o_RBG_B <= 1'b1;
+    end
+    else if (i_RGB_R == 1'b0 && i_RGB_G == 1'b1 && i_RGB_B == 1'b1) begin // Cyan -> Blue
+        o_RBG_R <= 1'b0;
+        o_RBG_G <= 1'b0;
+        o_RBG_B <= 1'b1;
+    end
+    else if (i_RGB_R == 1'b0 && i_RGB_G == 1'b0 && i_RGB_B == 1'b1) begin // Blue -> Magenta
+        o_RBG_R <= 1'b1;
+        o_RBG_G <= 1'b0;
+        o_RBG_B <= 1'b1;
+    end
+    else if (i_RGB_R == 1'b1 && i_RGB_G == 1'b0 && i_RGB_B == 1'b1) begin // Magenta -> Red
+        o_RBG_R <= 1'b1;
+        o_RBG_G <= 1'b0;
+        o_RBG_B <= 1'b0;
+    end
+endmodule
