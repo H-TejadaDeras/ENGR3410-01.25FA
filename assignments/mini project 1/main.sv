@@ -1,6 +1,7 @@
 /*  Simple RGB LED - Mini Project 1
  *  Henry Tejada Deras - 09-12-2025
  */ 
+// `include "led_controller.sv"
 
 module top(
     input logic clk, 
@@ -25,68 +26,54 @@ module top(
     assign RGB_G = ~green_led;
     assign RGB_B = ~blue_led;
 
+    // led_controller U1(
+    // .i_RGB_R(~RGB_R), 
+    // .i_RGB_G(~RGB_G), 
+    // .i_RGB_B(~RGB_B),
+    // .o_RBG_R(red_led), 
+    // .o_RBG_G(green_led),
+    // .o_RBG_B(blue_led)
+    // );
+
     // Counter Logic
     always_ff @(posedge clk) begin
         if (count == BLINK_INTERVAL - 1) begin
             count <= 0;
 
-            led_controller U1(
-            .i_RGB_R(~RGB_R), 
-            .i_RGB_G(~RGB_G), 
-            .i_RGB_B(~RGB_B),
-            .o_RBG_R(red_led), 
-            .o_RBG_G(green_led),
-            .o_RBG_B(blue_led)
-            );
+            if (i_RGB_R == 1'b1 && i_RGB_G == 1'b0 && i_RGB_B == 1'b0) begin // Red -> Yellow
+            o_RBG_R <= 1'b1;
+            o_RBG_G <= 1'b1;
+            o_RBG_B <= 1'b0;
+            end
+            else if (i_RGB_R == 1'b1 && i_RGB_G == 1'b1 && i_RGB_B == 1'b0) begin // Yellow -> Green
+                o_RBG_R <= 1'b0;
+                o_RBG_G <= 1'b1;
+                o_RBG_B <= 1'b0;
+            end
+            else if (i_RGB_R == 1'b0 && i_RGB_G == 1'b1 && i_RGB_B == 1'b0) begin // Green -> Cyan
+                o_RBG_R <= 1'b0;
+                o_RBG_G <= 1'b1;
+                o_RBG_B <= 1'b1;
+            end
+            else if (i_RGB_R == 1'b0 && i_RGB_G == 1'b1 && i_RGB_B == 1'b1) begin // Cyan -> Blue
+                o_RBG_R <= 1'b0;
+                o_RBG_G <= 1'b0;
+                o_RBG_B <= 1'b1;
+            end
+            else if (i_RGB_R == 1'b0 && i_RGB_G == 1'b0 && i_RGB_B == 1'b1) begin // Blue -> Magenta
+                o_RBG_R <= 1'b1;
+                o_RBG_G <= 1'b0;
+                o_RBG_B <= 1'b1;
+            end
+            else if (i_RGB_R == 1'b1 && i_RGB_G == 1'b0 && i_RGB_B == 1'b1) begin // Magenta -> Red
+                o_RBG_R <= 1'b1;
+                o_RBG_G <= 1'b0;
+                o_RBG_B <= 1'b0;
+            end
+
         end
         else begin
             count <= count + 1;
         end
-    end
-endmodule
-
-module led_controller #(
-    // LED Controlling Logic
-    input logic i_RGB_R,
-    input logic i_RGB_G,
-    input logic i_RGB_B,
-    output logic o_RBG_R,
-    output logic o_RBG_G,
-    output logic o_RBG_B
-);
-    // Variable Initialization
-    o_RBG_R = 1'b0;
-    o_RBG_G = 1'b0;
-    o_RBG_B = 1'b0;
-
-    if (i_RGB_R == 1'b1 && i_RGB_G == 1'b0 && i_RGB_B == 1'b0) begin // Red -> Yellow
-        o_RBG_R <= 1'b1;
-        o_RBG_G <= 1'b1;
-        o_RBG_B <= 1'b0;
-    end
-    else if (i_RGB_R == 1'b1 && i_RGB_G == 1'b1 && i_RGB_B == 1'b0) begin // Yellow -> Green
-        o_RBG_R <= 1'b0;
-        o_RBG_G <= 1'b1;
-        o_RBG_B <= 1'b0;
-    end
-    else if (i_RGB_R == 1'b0 && i_RGB_G == 1'b1 && i_RGB_B == 1'b0) begin // Green -> Cyan
-        o_RBG_R <= 1'b0;
-        o_RBG_G <= 1'b1;
-        o_RBG_B <= 1'b1;
-    end
-    else if (i_RGB_R == 1'b0 && i_RGB_G == 1'b1 && i_RGB_B == 1'b1) begin // Cyan -> Blue
-        o_RBG_R <= 1'b0;
-        o_RBG_G <= 1'b0;
-        o_RBG_B <= 1'b1;
-    end
-    else if (i_RGB_R == 1'b0 && i_RGB_G == 1'b0 && i_RGB_B == 1'b1) begin // Blue -> Magenta
-        o_RBG_R <= 1'b1;
-        o_RBG_G <= 1'b0;
-        o_RBG_B <= 1'b1;
-    end
-    else if (i_RGB_R == 1'b1 && i_RGB_G == 1'b0 && i_RGB_B == 1'b1) begin // Magenta -> Red
-        o_RBG_R <= 1'b1;
-        o_RBG_G <= 1'b0;
-        o_RBG_B <= 1'b0;
     end
 endmodule
