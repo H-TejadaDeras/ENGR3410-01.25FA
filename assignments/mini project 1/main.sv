@@ -17,14 +17,14 @@ module top(
 
     // Initial State Declarations
     initial begin
-        RBG_R = 1'b1;
-        RGB_G = 1'b0;
-        RGB_B = 1'b0;
+        RBG_R = 1'b0;
+        RGB_G = 1'b1;
+        RGB_B = 1'b1;
     end
 
-    assign RGB_R = ~red_led;
-    assign RGB_G = ~green_led;
-    assign RGB_B = ~blue_led;
+    // assign RGB_R = ~red_led;
+    // assign RGB_G = ~green_led;
+    // assign RGB_B = ~blue_led;
 
     // led_controller U1(
     // .i_RGB_R(~RGB_R), 
@@ -40,35 +40,35 @@ module top(
         if (count == BLINK_INTERVAL - 1) begin
             count <= 0;
 
-            if (i_RGB_R == 1'b1 && i_RGB_G == 1'b0 && i_RGB_B == 1'b0) begin // Red -> Yellow
-            o_RBG_R <= 1'b1;
-            o_RBG_G <= 1'b1;
-            o_RBG_B <= 1'b0;
+            if (RGB_R == 1'b0 && RGB_G == 1'b1 && RGB_B == 1'b1) begin // Red -> Yellow
+            RGB_R <= 1'b0;
+            RGB_G <= 1'b0;
+            RGB_B <= 1'b1;
             end
-            else if (i_RGB_R == 1'b1 && i_RGB_G == 1'b1 && i_RGB_B == 1'b0) begin // Yellow -> Green
-                o_RBG_R <= 1'b0;
-                o_RBG_G <= 1'b1;
-                o_RBG_B <= 1'b0;
+            else if (RGB_R == 1'b0 && RGB_G == 1'b0 && RGB_B == 1'b1) begin // Yellow -> Green
+                RGB_R <= 1'b1;
+                RGB_G <= 1'b0;
+                RGB_B <= 1'b1;
             end
-            else if (i_RGB_R == 1'b0 && i_RGB_G == 1'b1 && i_RGB_B == 1'b0) begin // Green -> Cyan
-                o_RBG_R <= 1'b0;
-                o_RBG_G <= 1'b1;
-                o_RBG_B <= 1'b1;
+            else if (RGB_R == 1'b1 && RGB_G == 1'b0 && RGB_B == 1'b1) begin // Green -> Cyan
+                RGB_R <= 1'b1;
+                RGB_G <= 1'b0;
+                RGB_B <= 1'b0;
             end
-            else if (i_RGB_R == 1'b0 && i_RGB_G == 1'b1 && i_RGB_B == 1'b1) begin // Cyan -> Blue
-                o_RBG_R <= 1'b0;
-                o_RBG_G <= 1'b0;
-                o_RBG_B <= 1'b1;
+            else if (RGB_R == 1'b1 && RGB_G == 1'b0 && RGB_B == 1'b0) begin // Cyan -> Blue
+                RGB_R <= 1'b1;
+                RGB_G <= 1'b1;
+                RGB_B <= 1'b0;
             end
-            else if (i_RGB_R == 1'b0 && i_RGB_G == 1'b0 && i_RGB_B == 1'b1) begin // Blue -> Magenta
-                o_RBG_R <= 1'b1;
-                o_RBG_G <= 1'b0;
-                o_RBG_B <= 1'b1;
+            else if (RGB_R == 1'b1 && RGB_G == 1'b1 && RGB_B == 1'b0) begin // Blue -> Magenta
+                RGB_R <= 1'b0;
+                RGB_G <= 1'b1;
+                RGB_B <= 1'b0;
             end
-            else if (i_RGB_R == 1'b1 && i_RGB_G == 1'b0 && i_RGB_B == 1'b1) begin // Magenta -> Red
-                o_RBG_R <= 1'b1;
-                o_RBG_G <= 1'b0;
-                o_RBG_B <= 1'b0;
+            else if (RGB_R == 1'b0 && RGB_G == 1'b1 && RGB_B == 1'b0) begin // Magenta -> Red
+                RGB_R <= 1'b0;
+                RGB_G <= 1'b1;
+                RGB_B <= 1'b1;
             end
 
         end
