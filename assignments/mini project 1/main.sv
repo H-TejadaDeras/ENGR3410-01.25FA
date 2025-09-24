@@ -17,7 +17,7 @@ module top(
 
     // Initial State Declarations
     initial begin
-        RBG_R = HIGH;
+        RGB_R = HIGH;
         RGB_G = LOW;
         RGB_B = LOW;
     end
