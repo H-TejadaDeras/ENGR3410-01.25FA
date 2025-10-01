@@ -12,8 +12,8 @@
  *  4 = Blue -> Magenta | 240 -> 300 |  (R: /; G: _; B: -)
  *  5 = Magenta -> Red  | 300 -> 360 |  (R: -; G: _; B: \)
  */
-`begin_keywords "1800-2005" // SystemVerilog-2005
-`include pwm.sv
+// `begin_keywords "1800-2005" // SystemVerilog-2005
+`include "pwm.sv"
 
 module top(
     input  logic clk,
@@ -29,6 +29,9 @@ module top(
     parameter NUM_STATES = 6; // Number of States
     logic [$clog2(STATE_PERIOD) - 1:0] counter = 0;
     logic [$clog2(NUM_STATES) - 1:0] state = 0; 
+
+    // Net Declarations
+    logic state_updater = 0; // Intermediate signal to trigger changes in state (triggers one every 1/6 s)
     
     // Initial State Declarations
     initial begin
@@ -40,45 +43,57 @@ module top(
     // Update State Counter Logic
     always_ff @(posedge clk) begin
         if (counter == STATE_PERIOD - 1) begin
-            if (state >= 5) begin // Reset State Counter
-                state <= 0;
-            end else begin // Increment State Counter
-                state <= state + 1;
-            end
-            count <= 0;
+            state_updater <= HIGH;
+            counter <= 0;
         end else begin
-            count <= count + 1;
+            state_updater <= LOW;
+            counter <= counter + 1;
+        end
+    end
+
+    // Update State Logic
+    always_ff @(posedge state_updater) begin
+        if (state >= 5) begin // Reset State Counter
+            state <= 0;
+        end else begin // Increment State Counter
+            state <= state + 1;
         end
     end
 
     // State Machine Logic
-    always_comb @(posedge state) begin
+    always_comb begin
         case (state)
-            0:
+            0: begin
                 RGB_R <= HIGH;
                 RGB_G <= LOW; // tmp
                 RGB_B <= LOW;
-            1:
+            end
+            1: begin
                 RGB_R <= LOW; // tmp
                 RGB_G <= HIGH;
                 RGB_B <= LOW;
-            2:
+            end
+            2: begin
                 RGB_R <= LOW;
                 RGB_G <= HIGH;
                 RGB_B <= LOW; // tmp
-            3:
+            end
+            3: begin
                 RGB_R <= LOW;
                 RGB_G <= LOW; // tmp
                 RGB_B <= HIGH;
-            4:
+            end
+            4: begin
                 RGB_R <= LOW; // tmp
                 RGB_G <= LOW;
                 RGB_B <= HIGH;
-            5:
+            end
+            5: begin
                 RGB_R <= HIGH;
                 RGB_G <= LOW;
                 RGB_B <= LOW; // tmp
+            end
         endcase
     end
 endmodule
-`end_keywords "1800-2005" // SystemVerilog-2005
+// `end_keywords "1800-2005" // SystemVerilog-2005
