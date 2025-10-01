@@ -63,6 +63,11 @@ module top(
     // State Machine Logic
     always_comb begin
         case (state)
+            default: begin
+                RGB_R <= LOW;
+                RGB_G <= LOW;
+                RGB_B <= LOW;
+            end
             0: begin
                 RGB_R <= HIGH;
                 RGB_G <= LOW; // tmp
