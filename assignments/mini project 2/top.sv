@@ -23,7 +23,7 @@ module top(
     );
     
     // Variable Declarations
-    parameter STATE_PERIOD = 2000000000; // Clock Frequency = 12 MHz; Clock Frequency / 6 = State Period (2 MHz = 1 Period)
+    parameter STATE_PERIOD = 2000000; // Clock Frequency = 12 MHz; Clock Frequency / 6 = State Period (2 MHz = 1 Period)
     parameter HIGH = 1'b0; // LED On (accounting for active-low setup)
     parameter LOW = 1'b1; // LED Off (accounting for active-low setup)
     parameter NUM_STATES = 6; // Number of States
@@ -64,41 +64,43 @@ module top(
     always_comb begin
         case (state)
             default: begin
-                RGB_R <= LOW;
-                RGB_G <= LOW;
-                RGB_B <= LOW;
+                RGB_R = LOW;
+                RGB_G = LOW;
+                RGB_B = LOW;
             end
             0: begin
-                RGB_R <= HIGH;
-                RGB_G <= LOW; // tmp
-                RGB_B <= LOW;
+                RGB_R = HIGH;
+                RGB_G = LOW; // tmp
+                RGB_B = LOW;
             end
             1: begin
-                RGB_R <= LOW; // tmp
-                RGB_G <= HIGH;
-                RGB_B <= LOW;
+                RGB_R = LOW; // tmp
+                RGB_G = HIGH;
+                RGB_B = LOW;
             end
             2: begin
-                RGB_R <= LOW;
-                RGB_G <= HIGH;
-                RGB_B <= LOW; // tmp
+                RGB_R = LOW;
+                RGB_G = HIGH;
+                RGB_B = LOW; // tmp
             end
             3: begin
-                RGB_R <= LOW;
-                RGB_G <= LOW; // tmp
-                RGB_B <= HIGH;
+                RGB_R = LOW;
+                RGB_G = LOW; // tmp
+                RGB_B = HIGH;
             end
             4: begin
-                RGB_R <= LOW; // tmp
-                RGB_G <= LOW;
-                RGB_B <= HIGH;
+                RGB_R = LOW; // tmp
+                RGB_G = LOW;
+                RGB_B = HIGH;
             end
             5: begin
-                RGB_R <= HIGH;
-                RGB_G <= LOW;
-                RGB_B <= LOW; // tmp
+                RGB_R = HIGH;
+                RGB_G = LOW;
+                RGB_B = LOW; // tmp
             end
         endcase
     end
+
+    // PWM Module
 endmodule
 // `end_keywords "1800-2005" // SystemVerilog-2005
