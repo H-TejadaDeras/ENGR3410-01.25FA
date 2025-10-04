@@ -36,6 +36,7 @@ module top(
     logic [$clog2(NUM_STATES) - 1:0] state = 0; 
     logic [$clog2(3) - 1:0] pwm_led = X; // 0 - Red, 1 - Green, 2 - Blue
     logic pwm_mode = X;
+    logic pwm_output = X;
 
     // Net Declarations
     logic state_updater = 0; // Intermediate signal to trigger changes in state (triggers one every 1/6 s)
@@ -83,6 +84,7 @@ module top(
                 pwm_trigger = HIGH;
                 pwm_led = 1; // Green
                 pwm_mode = INCREMENT_DUTY_CYCLE_MODE;
+                RGB_G = pwm_output;
             end
             1: begin
                 RGB_R = LED_OFF; // tmp
@@ -114,16 +116,14 @@ module top(
 
     // PWM Module
     always_ff @(posedge state) begin
-        if (pwm_led == 1) begin // Green
-            pwm_wrapper #(
-                .DUTY_CYCLE_FUNC_MODE   (pwm_mode),
-                .DUTY_CYCLE_FUNC_PERIOD (STATE_PERIOD),
-                .DUTY_CYCLE_FUNC_TICK   (2000)
-            ) PG (
-                .clk    (clk),
-                .o_pwm  (RGB_G)
-            );
-        end
+        pwm_wrapper #(
+            .DUTY_CYCLE_FUNC_MODE   (pwm_mode),
+            .DUTY_CYCLE_FUNC_PERIOD (STATE_PERIOD),
+            .DUTY_CYCLE_FUNC_TICK   (2000)
+        ) U_PWM (
+            .clk    (clk),
+            .o_pwm  (pwm_output)
+        );
     end
 endmodule
 // `end_keywords "1800-2005" // SystemVerilog-2005
