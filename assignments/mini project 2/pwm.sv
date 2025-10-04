@@ -1,5 +1,13 @@
 /*  PWM Generator
  *  Copyright (c) 2025, Bradley Minch
+ *
+ *  Inputs:
+ *  parameter PWM_INTERVAL: Intervals in one clock cycle (used to calculate duty cycle)
+ *  logic clk: Clock Signal
+ *  logic pwm_value: Used to calculate duty cycle where pwm_value/PWM_INTERVAL * 100% = duty cycle
+ *  
+ *  Outputs:
+ *  logic pwm_out: Output PWM Signal
  */
 
 module pwm #(
