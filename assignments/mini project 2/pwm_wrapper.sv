@@ -33,20 +33,16 @@ module pwm_wrapper #(
     
     // Variable Declarations
     logic [$clog2(DUTY_CYCLE_FUNC_TICK) - 1:0] duty_cycle_func_counter = 0;
-    logic [$clog2(DUTY_CYCLE_FUNC_PERIOD) - 1:0] duty_cycle_period_counter = 0; // Tracks if period has ended
-    
+    // logic [$clog2(DUTY_CYCLE_FUNC_PERIOD) - 1:0] duty_cycle_period_counter = 0; // Tracks if period has ended
+    logic [$clog2(DUTY_CYCLE_FUNC_TICK) - 1:0] duty_cycle_func_value; // Value inputted to pwm generator (value/tick = duty cycle)
+
     // Initialize DUTY_CYCLE_FUNC Specific Variables
     initial begin
         if (DUTY_CYCLE_FUNC_MODE) begin // Increment Duty Cycle Mode
-            logic [$clog2(DUTY_CYCLE_FUNC_TICK) - 1:0] duty_cycle_func_value = 0; // Value inputted to pwm generator (value/tick = duty cycle)
+            duty_cycle_func_value = 0; // Value inputted to pwm generator (value/tick = duty cycle)
         end else begin // Decrement Duty Cycle Mode
-            logic [$clog2(DUTY_CYCLE_FUNC_TICK) - 1:0] duty_cycle_func_value = DUTY_CYCLE_FUNC_TICK; // Value inputted to pwm generator (value/tick = duty cycle)
+            duty_cycle_func_value = DUTY_CYCLE_FUNC_TICK; // Value inputted to pwm generator (value/tick = duty cycle)
         end
-    end
-
-    // Period Counter
-    always_ff @(posedge clk) begin
-        duty_cycle_period_counter <= duty_cycle_period_counter + 1;
     end
 
     // Generate pwm_value
@@ -58,12 +54,22 @@ module pwm_wrapper #(
             end else begin // One Tick Not Completed -> Update Counter
                 duty_cycle_func_counter <= duty_cycle_func_counter + 1;
             end
+
+            // Reset duty_cycle_func_value; to make sure value does not exceed tick value and result in a duty cycle > 100%
+            if (duty_cycle_func_value >= DUTY_CYCLE_FUNC_TICK - 1) begin
+                duty_cycle_func_value <= 0;
+            end
         end else begin // Decrement Duty Cycle Mode
             if (duty_cycle_func_counter >= DUTY_CYCLE_FUNC_TICK - 1) begin // One Tick Completed -> Change Value
                 duty_cycle_func_value <= duty_cycle_func_value - 1;
                 duty_cycle_func_counter <= 0;
             end else begin // One Tick Not Completed -> Update Counter
                 duty_cycle_func_counter <= duty_cycle_func_counter + 1;
+            end
+
+            // Reset duty_cycle_func_value; to make sure value does go below 0 and result in a negative duty cycle > 0%
+            if (0 + 1 >= duty_cycle_func_value) begin
+                duty_cycle_func_value <= 0;
             end
         end
     end

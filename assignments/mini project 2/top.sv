@@ -13,7 +13,6 @@
  *  5 = Magenta -> Red  | 300 -> 360 |  (R: -; G: _; B: \)
  */
 // `begin_keywords "1800-2005" // SystemVerilog-2005
-`include "pwm.sv"
 `include "pwm_wrapper.sv"
 
 module top(
@@ -33,14 +32,12 @@ module top(
     parameter INCREMENT_DUTY_CYCLE_MODE = 1'b1; // Used for PWM Wrapper Module (Increment Duty Cycle from 0% -> 100%)
     parameter DECREMENT_DUTY_CYCLE_MODE = 1'b0; // Used for PWM Wrapper Module (Decrement Duty Cycle from 100% -> 0%)
     logic [$clog2(STATE_PERIOD) - 1:0] counter = 0;
-    logic [$clog2(NUM_STATES) - 1:0] state = 0; 
-    logic [$clog2(3) - 1:0] pwm_led = X; // 0 - Red, 1 - Green, 2 - Blue
-    logic pwm_mode = X;
-    logic pwm_output = X;
+    logic [$clog2(NUM_STATES) - 1:0] state = 0;
+    logic pwm_output_inc;
+    logic pwm_output_dec;
 
     // Net Declarations
-    logic state_updater = 0; // Intermediate signal to trigger changes in state (triggers one every 1/6 s)
-    // logic pwm_trigger = 0; // Intermediate signal to trigger PWM Module
+    logic state_updater = LOW; // Intermediate signal to trigger changes in state (triggers one every 1/6 s)
     
     // Initial State Declarations
     initial begin
@@ -52,10 +49,10 @@ module top(
     // Update State Counter Logic
     always_ff @(posedge clk) begin
         if (counter == STATE_PERIOD - 1) begin
-            state_updater <= LED_ON;
+            state_updater <= HIGH;
             counter <= 0;
         end else begin
-            state_updater <= LED_OFF;
+            state_updater <= LOW;
             counter <= counter + 1;
         end
     end
@@ -79,51 +76,54 @@ module top(
             end
             0: begin
                 RGB_R = LED_ON;
-                // RGB_G = LED_OFF; // tmp
+                RGB_G = ~pwm_output_inc; // Inverted to account for active-low setup
                 RGB_B = LED_OFF;
-                pwm_trigger = HIGH;
-                pwm_led = 1; // Green
-                pwm_mode = INCREMENT_DUTY_CYCLE_MODE;
-                RGB_G = pwm_output;
             end
             1: begin
-                RGB_R = LED_OFF; // tmp
+                RGB_R = ~pwm_output_dec; // Inverted to account for active-low setup
                 RGB_G = LED_ON;
                 RGB_B = LED_OFF;
             end
             2: begin
                 RGB_R = LED_OFF;
                 RGB_G = LED_ON;
-                RGB_B = LED_OFF; // tmp
+                RGB_B = ~pwm_output_inc; // Inverted to account for active-low setup
             end
             3: begin
                 RGB_R = LED_OFF;
-                RGB_G = LED_OFF; // tmp
+                RGB_G = ~pwm_output_dec; // Inverted to account for active-low setup
                 RGB_B = LED_ON;
             end
             4: begin
-                RGB_R = LED_OFF; // tmp
+                RGB_R = ~pwm_output_inc; // Inverted to account for active-low setup
                 RGB_G = LED_OFF;
                 RGB_B = LED_ON;
             end
             5: begin
                 RGB_R = LED_ON;
                 RGB_G = LED_OFF;
-                RGB_B = LED_OFF; // tmp
+                RGB_B = ~pwm_output_dec; // Inverted to account for active-low setup
             end
         endcase
     end
 
-    // PWM Module
-    always_ff @(posedge state) begin
-        pwm_wrapper #(
-            .DUTY_CYCLE_FUNC_MODE   (pwm_mode),
-            .DUTY_CYCLE_FUNC_PERIOD (STATE_PERIOD),
-            .DUTY_CYCLE_FUNC_TICK   (2000)
-        ) U_PWM (
-            .clk    (clk),
-            .o_pwm  (pwm_output)
-        );
-    end
+    // PWM Modules
+    pwm_wrapper #(
+        .DUTY_CYCLE_FUNC_MODE   (INCREMENT_DUTY_CYCLE_MODE),
+        .DUTY_CYCLE_FUNC_PERIOD (STATE_PERIOD),
+        .DUTY_CYCLE_FUNC_TICK   (2000)
+    ) U_PWM_INC (
+        .clk    (clk),
+        .o_pwm  (pwm_output_inc)
+    );
+
+    pwm_wrapper #(
+        .DUTY_CYCLE_FUNC_MODE   (DECREMENT_DUTY_CYCLE_MODE),
+        .DUTY_CYCLE_FUNC_PERIOD (STATE_PERIOD),
+        .DUTY_CYCLE_FUNC_TICK   (2000)
+    ) U_PWM_DEC (
+        .clk    (clk),
+        .o_pwm  (pwm_output_dec)
+    );
 endmodule
 // `end_keywords "1800-2005" // SystemVerilog-2005
