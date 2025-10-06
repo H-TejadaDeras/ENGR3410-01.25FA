@@ -44,7 +44,7 @@ module pwm_wrapper #(
         end
     end
 
-    // Generate pwm_value
+    // Generate pwm_value input for pwm generator
     always_ff @(posedge clk) begin
         if (DUTY_CYCLE_FUNC_MODE) begin // Increment Duty Cycle Mode
             if (duty_cycle_func_counter >= DUTY_CYCLE_FUNC_TICK - 1) begin // One Tick Completed -> Change Value

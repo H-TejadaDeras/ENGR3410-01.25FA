@@ -5,8 +5,8 @@
  *  Drives RGB LED smoothly through HSV Color Wheel in 1 s
  * 
  *  States:
- *  0 = Red -> Yellow   | 0 -> 60 |     (R: -; G: /; B: _)
- *  1 = Yellow -> Green | 60 -> 120 |   (R: \; G: -; B: _)
+ *  0 = Red -> Yellow   | 0 -> 60    |  (R: -; G: /; B: _)
+ *  1 = Yellow -> Green | 60 -> 120  |  (R: \; G: -; B: _)
  *  2 = Green -> Cyan   | 120 -> 180 |  (R: _; G: -; B: /)
  *  3 = Cyan -> Blue    | 180 -> 240 |  (R: _; G: \; B: -)
  *  4 = Blue -> Magenta | 240 -> 300 |  (R: /; G: _; B: -)
@@ -107,7 +107,8 @@ module top(
         endcase
     end
 
-    // PWM Modules
+    // PWM Signal Generation Modules
+    // Incrementing Duty Cycle PWM Signal
     pwm_wrapper #(
         .DUTY_CYCLE_FUNC_MODE   (INCREMENT_DUTY_CYCLE_MODE),
         .DUTY_CYCLE_FUNC_PERIOD (STATE_PERIOD),
@@ -117,6 +118,7 @@ module top(
         .o_pwm  (pwm_output_inc)
     );
 
+    // Decrementing Duty Cycle PWM Signal
     pwm_wrapper #(
         .DUTY_CYCLE_FUNC_MODE   (DECREMENT_DUTY_CYCLE_MODE),
         .DUTY_CYCLE_FUNC_PERIOD (STATE_PERIOD),
