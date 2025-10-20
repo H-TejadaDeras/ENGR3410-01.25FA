@@ -1,4 +1,7 @@
 /*  
+ *  Conway's Game of Life Logic
+ *  Henry Tejada Deras - 10-19-2025
+ *  
  *  Generates next time step board using John Conway's Game of Life Game Logic
  *  Rules Implemented:
  *  - Any living cell with fewer than two living neighbors dies.
@@ -14,6 +17,7 @@
  *  Outputs:
  *  logic [6:0] o_game_board: Updated Game Board after 1 time step.
  */ 
+// `begin_keywords "1800-2005" // SystemVerilog-2005
 `include "cgol_cell.sv"
 
  module cgol_logic(
@@ -33,3 +37,4 @@
     );
     // Assemble back together values
  endmodule
+ // `end_keywords "1800-2005" // SystemVerilog-2005
