@@ -36,13 +36,13 @@ module cgol_cell(
     logic current_cell_state = i_local_game_board[5];
 
     // Reset Module Logic
-    always_comb @(posedge reset) begin
-        logic [3:0] alive_neighbors_count = 0;
-        logic o_cell = 0;
-    end
+    // always_comb @(posedge reset) begin
+    //     logic [3:0] alive_neighbors_count = 0;
+    //     logic o_cell = 0;
+    // end
 
     // Count Alive Neighbors to Cell; Cell 5 is omitted since that is current cell
-    always_comb @(posedge clk) begin
+    always_comb begin
     alive_neighbors_count = i_local_game_board[0] + i_local_game_board[1] + 
         i_local_game_board[2] + i_local_game_board[3] + i_local_game_board[4] +
         i_local_game_board[6] + i_local_game_board[7] + i_local_game_board[8] + 
@@ -50,7 +50,7 @@ module cgol_cell(
     end
 
     // Apply Alive/Dead Conditions
-    always_ff begin
+    always_ff @(posedge clk) begin
         case (current_cell_state)
             ALIVE: begin
                 if (alive_neighbors_count == 2 | alive_neighbors_count == 3) begin

@@ -12,7 +12,7 @@
  *  - Cyclic Boundary Conditions
  */ 
 // `begin_keywords "1800-2005" // SystemVerilog-2005
-// `include "cgol_logic.sv"
+`include "cgol_logic.sv"
 `include "memory.sv"
 `include "ws2812b.sv"
 
@@ -24,7 +24,7 @@ module top (
 
     // Variable Declarations
     logic [23:0] shift_reg = 24'd0;
-    logic tester_mem [0:63];
+    reg tester_mem [0:63];
 
     // Net Declarations
     logic ws2812b_out;
@@ -33,7 +33,13 @@ module top (
     always_comb begin
         $readmemh("cgol_seeds/toad_tester.mem", tester_mem);
     end
-    
+    // Process CGOL State
+    cgol_logic u1 (
+        .clk            (clk),
+        .i_game_board   (tester_mem),
+        .o_game_board   (tester_mem)
+    );
+
     // WS2812B output driver
     ws2812b u4 (
         .clk            (clk), 
