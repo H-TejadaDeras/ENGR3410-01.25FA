@@ -23,7 +23,7 @@ module top (
 );
     // Variable Declarations
     logic [23:0] shift_reg = 24'd0;
-    logic [7:0] seed_memory [7:0];
+    // logic [63:0] seed_memory;
     logic [7:0] o_game_board [7:0];
     logic [63:0] seed_memory_vector;
 
@@ -32,23 +32,22 @@ module top (
 
     // Read Seed Memories
     always_comb begin
-        $readmemb("cgol_seeds/toad_tester.bin", seed_memory);
+        $readmemb("cgol_seeds/toad_tester.bin", seed_memory_vector);
     end
 
     // Convert 2-D Memory to 1-D Memory
-    genvar i;
-    generate 
-        for (i=0; i<8; ++i) begin
-            assign seed_memory_vector[((i + 1) * 8 - 1): i * 8] = [i] seed_memory [7:0];
-        end
-    endgenerate
+    // generate 
+    //     for (genvar i=0; i<8; ++i) begin
+    //         assign seed_memory_vector[((i + 1) * 8 - 1) : i * 8] = [7:0] seed_memory [i];
+    //     end
+    // endgenerate
 
     // assign o_game_board = seed_memory;
     // Process CGOL State
     cgol_logic u1 (
-        .clk            (clk),
-        .i_game_board   (seed_memory_vector),
-        .o_game_board   (o_game_board)
+        .clk                    (clk),
+        .i_game_board_vector    (seed_memory_vector),
+        .o_game_board_vector    (o_game_board)
     );
 
     // WS2812B output driver

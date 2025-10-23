@@ -21,8 +21,8 @@
 `include "cgol_cell.sv"
 
 // Macros for Variable Names
-`define CELL(idx) ({cell_, ``idx})
-`define CELL_LOCAL_GAME_BOARD(idx) ({cell_, ``idx, _local_game_board})
+// `define CELL(idx) ({cell_, ``idx})
+// `define CELL_LOCAL_GAME_BOARD(idx) ({cell_, ``idx, _local_game_board})
 
  module cgol_logic(
     input   logic        clk,
@@ -56,16 +56,15 @@
    // Column and Row Index for Game Board Indexing
    always_ff @(posedge current_cell) begin
       column_index[2:0] = column_index + 1;
-      if (column_index == 3'b111) begin // Will fix later with counter for column index (every 8)
+      if (column_index == 3'b111) begin
          row_index = column_index + 1;
       end
    end
 
    // Convert Vector to 2-D Array
-   genvar j;
    generate 
-      for (j=0; j<8; ++j) begin
-         assign [j] i_game_board [7:0] = i_game_board_vector[((j + 1) * 8 - 1): j * 8];
+      for (genvar j=0; j<8; ++j) begin
+         assign i_game_board[j][7:0] = i_game_board_vector[((j + 1) * 8 - 1): j * 8];
       end
    endgenerate
 
