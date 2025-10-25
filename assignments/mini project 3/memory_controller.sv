@@ -38,14 +38,14 @@ module memory_controller #(
     localparam WRITE_REG = 2'b01; // Write to write-only register
     localparam CYCLE_REG = 2'b11; // Transfer contents from write-only register to read-only register
 
-    logic [63:0] read_register;
-    logic [63:0] write_register;
+    logic read_register [63:0];
+    logic write_register [63:0];
 
     logic [5:0] address_counter = 0; // Used to transfer contents from write-only register to read-only register
 
     // Memory Initialization
     initial if (MEM_INIT_FILE) begin
-        $readmemh(MEM_INIT_FILE, read_register);
+        $readmemb(MEM_INIT_FILE, read_register);
     end
 
     always_comb begin

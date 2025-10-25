@@ -61,8 +61,8 @@ module top (
         .clk            (clk),
         .operation      (u1_memory_operation),
         .reg_address    (u1_memory_operation_address),
-        .i_data         (u1_i_data),
-        .o_data         (u1_o_data)
+        .i_data         (u1_o_data),
+        .o_data         (u1_i_data)
     );
 
     // WS2812B output driver

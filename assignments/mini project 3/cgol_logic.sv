@@ -97,7 +97,7 @@
 
    // External Start Trigger Logic
    always_comb begin
-      if (i_start = HIGH) begin
+      if (i_start == HIGH) begin
          state = FETCH_DATA;
          o_done = LOW;
       end
@@ -106,6 +106,8 @@
    // Create Local Game Board
    always_comb begin
       case (fetch_data_counter)
+         default: begin
+         end
          4'b0000: begin // Local Board Cell 0
             fetch_operation_memory_operation_address = {row_index - 1, column_index - 1};
             local_game_board[0] = i_data;
