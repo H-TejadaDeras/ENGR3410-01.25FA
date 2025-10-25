@@ -18,6 +18,10 @@
 // `begin_keywords "1800-2005" // SystemVerilog-2005
 `include "cgol_cell.sv"
 
+// Macros Used to Determine Current Cell Row and Column Value for Creating Local Game Board
+`define ROW_INDEX current_cell[5:3]
+`define COLUMN_INDEX current_cell[2:0]
+
  module cgol_logic(
     input   logic       clk,
     input   logic       i_data, // from memory controller
@@ -41,8 +45,6 @@
 
    logic [5:0] current_cell = 5'b11111; // Used to keep track of which is the current cell being simulated; initialized as 5'b11111 to prevent initialization reset from immediately starting fetch sequence
    logic [8:0] local_game_board = 0;
-   logic [2:0] column_index = 3'b0;
-   logic [2:0] row_index = 3'b0;
    logic [1:0] state = RESET; // to start initially in a fresh, reset state
 
    logic [3:0] fetch_data_counter = 0; // Counter used to keep track of which data has been fetched
@@ -91,10 +93,6 @@
       endcase
    end
 
-   // Determine Current Cell Row and Column Value for Creating Local Game Board
-   assign row_index = current_cell[5:3];
-   assign column_index = current_cell[2:0];
-
    // External Start Trigger Logic
    always_comb begin
       if (i_start == HIGH) begin
@@ -109,47 +107,47 @@
          default: begin
          end
          4'b0000: begin // Local Board Cell 0
-            fetch_operation_memory_operation_address = {row_index - 1, column_index - 1};
+            fetch_operation_memory_operation_address = {`ROW_INDEX - 3'd1, `COLUMN_INDEX - 3'd1};
             local_game_board[0] = i_data;
          end
 
          4'b0001: begin // Local Board Cell 1
-            fetch_operation_memory_operation_address = {row_index - 1, column_index};
+            fetch_operation_memory_operation_address = {`ROW_INDEX - 3'd1, `COLUMN_INDEX};
             local_game_board[1] = i_data;
          end
 
          4'b0010: begin // Local Board Cell 2
-            fetch_operation_memory_operation_address = {row_index - 1, column_index + 1};
+            fetch_operation_memory_operation_address = {`ROW_INDEX - 3'd1, `COLUMN_INDEX + 3'd1};
             local_game_board[2] = i_data;
          end
 
          4'b0011: begin // Local Board Cell 3
-            fetch_operation_memory_operation_address = {row_index, column_index - 1};
+            fetch_operation_memory_operation_address = {`ROW_INDEX, `COLUMN_INDEX - 3'd1};
             local_game_board[3] = i_data;
          end
 
          4'b0100: begin // Local Board Cell 4
-            fetch_operation_memory_operation_address = {row_index, column_index};
+            fetch_operation_memory_operation_address = {`ROW_INDEX, `COLUMN_INDEX};
             local_game_board[4] = i_data;
          end
 
          4'b0101: begin // Local Board Cell 5
-            fetch_operation_memory_operation_address = {row_index, column_index + 1};
+            fetch_operation_memory_operation_address = {`ROW_INDEX, `COLUMN_INDEX + 3'd1};
             local_game_board[5] = i_data;
          end
 
          4'b0110: begin // Local Board Cell 6
-            fetch_operation_memory_operation_address = {row_index + 1, column_index - 1};
+            fetch_operation_memory_operation_address = {`ROW_INDEX + 3'd1, `COLUMN_INDEX - 3'd1};
             local_game_board[6] = i_data;
          end
 
          4'b0111: begin // Local Board Cell 7
-            fetch_operation_memory_operation_address = {row_index + 1, column_index};
+            fetch_operation_memory_operation_address = {`ROW_INDEX + 3'd1, `COLUMN_INDEX};
             local_game_board[7] = i_data;
          end
 
          4'b1000: begin // Local Board Cell 8
-            fetch_operation_memory_operation_address = {row_index + 1, column_index + 1};
+            fetch_operation_memory_operation_address = {`ROW_INDEX + 3'd1, `COLUMN_INDEX + 3'd1};
             local_game_board[8] = i_data;
          end
       endcase

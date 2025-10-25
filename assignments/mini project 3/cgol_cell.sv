@@ -35,10 +35,10 @@ module cgol_cell(
 
     // Count Alive Neighbors to Cell; Cell 5 is omitted since that is current cell
     always_comb begin
-    alive_neighbors_count = i_local_game_board[0] + i_local_game_board[1] + 
-        i_local_game_board[2] + i_local_game_board[3] + i_local_game_board[4] +
-        i_local_game_board[6] + i_local_game_board[7] + i_local_game_board[8] + 
-        i_local_game_board[9];
+        alive_neighbors_count = i_local_game_board[0] + i_local_game_board[1] +
+            i_local_game_board[2] + i_local_game_board[3] + 
+            i_local_game_board[4] + i_local_game_board[6] + 
+            i_local_game_board[7] + i_local_game_board[8];
     end
 
     // Apply Alive/Dead Conditions

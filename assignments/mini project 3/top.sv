@@ -37,8 +37,8 @@ module top (
     logic u1_start_trigger;
     logic u1_i_data;
     logic u1_i_start;
-    logic u1_memory_operation;
-    logic u1_memory_operation_address;
+    logic [1:0] u1_memory_operation;
+    logic [5:0] u1_memory_operation_address;
     logic u1_o_data;
     logic u1_o_done;
 
