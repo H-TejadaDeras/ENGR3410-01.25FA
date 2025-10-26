@@ -41,6 +41,7 @@ module top (
     logic [5:0] u1_memory_operation_address;
     logic u1_o_data;
     logic u1_o_done;
+    logic u1_start_trigger_save;
 
     logic ws2812b_out;
 
