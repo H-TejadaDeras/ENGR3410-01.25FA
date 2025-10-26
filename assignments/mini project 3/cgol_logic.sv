@@ -55,7 +55,7 @@
    logic cgol_cell_o_cell;
 
    // Main State Machine + Memory Controller Interface
-   always_comb begin
+   always_ff @(posedge clk) begin
       case (state)
          FETCH_DATA: begin
             memory_operation = READ_REG;
@@ -94,7 +94,7 @@
    end
 
    // External Start Trigger Logic
-   always_comb begin
+   always_ff @(posedge clk) begin
       if (i_start == HIGH) begin
          state = FETCH_DATA;
          o_done = LOW;
@@ -102,10 +102,13 @@
    end
 
    // Create Local Game Board
-   always_comb begin
+   always_ff @(posedge clk) begin
       case (fetch_data_counter)
          default: begin
+            fetch_operation_memory_operation_address = 6'b000000;
+            local_game_board = 9'b000000000;
          end
+
          4'b0000: begin // Local Board Cell 0
             fetch_operation_memory_operation_address = {`ROW_INDEX - 3'd1, `COLUMN_INDEX - 3'd1};
             local_game_board[0] = i_data;

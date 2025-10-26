@@ -76,7 +76,7 @@ module top (
     // );
 
     // Top State Machine
-    always_comb begin
+    always_ff @(posedge clk) begin
         case (state_top)
             PROCESS_GAME_STATE: begin
                 u1_start_trigger = HIGH;
@@ -112,14 +112,14 @@ module top (
     end
 
     // Next Step Trigger from CGOL_Logic Module
-    always_comb begin
+    always_ff @(posedge clk) begin
         if (u1_o_done == HIGH) begin
             state_top = ADD_COLOR_INFO;
         end
     end
 
     // Start Game Trigger from User - Not functional currently, top state machine must be more developed
-    always_comb begin
+    always_ff @(posedge clk) begin
         if (SW == HIGH) begin
             state_top = PROCESS_GAME_STATE;
         end

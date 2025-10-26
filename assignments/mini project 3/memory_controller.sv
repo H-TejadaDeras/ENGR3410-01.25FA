@@ -48,7 +48,7 @@ module memory_controller #(
         $readmemb(MEM_INIT_FILE, read_register);
     end
 
-    always_comb begin
+    always_ff @(posedge clk) begin
         case (operation)
             READ_REG: begin
                 o_data = read_register[reg_address];
