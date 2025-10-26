@@ -14,6 +14,7 @@
  *      - 2'b01: Write to write-only register; 1 cycle operation.
  *      - 2'b11: Cycle contents from write-only register to read-only register;
  *          64 cycles operation.
+ *      - 2'b10: Do no operation.
  *  logic [5:0] reg_address: Address to which to execute operation.
  *  logic i_data: Data input for write operation. Will be ignored in other
  *      operations.
@@ -37,6 +38,7 @@ module memory_controller #(
     localparam READ_REG = 2'b00; // Read from read-only register
     localparam WRITE_REG = 2'b01; // Write to write-only register
     localparam CYCLE_REG = 2'b11; // Transfer contents from write-only register to read-only register
+    localparam IDLE = 2'b10; // Do no operation
 
     logic read_register [63:0];
     logic write_register [63:0];
@@ -51,16 +53,19 @@ module memory_controller #(
     always_ff @(posedge clk) begin
         case (operation)
             READ_REG: begin
-                o_data = read_register[reg_address];
+                o_data <= read_register[reg_address];
             end
 
             WRITE_REG: begin
-                write_register[reg_address] = i_data;
+                write_register[reg_address] <= i_data;
             end
 
             CYCLE_REG: begin
-                read_register[address_counter] = write_register[address_counter];
-                address_counter = address_counter + 1;
+                read_register[address_counter] <= write_register[address_counter];
+                address_counter <= address_counter + 1;
+            end
+
+            IDLE: begin
             end
         endcase
     end

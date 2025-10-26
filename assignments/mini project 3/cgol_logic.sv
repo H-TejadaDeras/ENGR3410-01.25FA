@@ -61,36 +61,36 @@
    always_ff @(posedge clk) begin
       case (state)
          FETCH_DATA: begin
-            memory_operation = READ_REG;
-            memory_operation_address = fetch_operation_memory_operation_address;
+            memory_operation <= READ_REG;
+            memory_operation_address <= fetch_operation_memory_operation_address;
             if (fetch_data_counter >= 4'b1000) begin // Got last local game board cell entry
-               fetch_data_counter = 0;
-               state = PROCESS_DATA;
+               fetch_data_counter <= 0;
+               state <= PROCESS_DATA;
             end
          end
 
          PROCESS_DATA: begin
-            cgol_cell_i_local_game_board = local_game_board;
-            state = SAVE_DATA;
+            cgol_cell_i_local_game_board <= local_game_board;
+            state <= SAVE_DATA;
          end
 
          SAVE_DATA: begin
-            memory_operation = WRITE_REG;
-            memory_operation_address = current_cell;
-            o_data = cgol_cell_o_cell;
-            state = RESET;
+            memory_operation <= WRITE_REG;
+            memory_operation_address <= current_cell;
+            o_data <= cgol_cell_o_cell;
+            state <= RESET;
          end
 
          RESET: begin
-            cgol_cell_i_local_game_board = 0;
+            cgol_cell_i_local_game_board <= 0;
             if (current_cell == 5'b11111) begin // last cell
-               current_cell = 0;
+               current_cell <= 0;
                if (i_start == LOW) begin
-                  o_done_trigger = HIGH; // Send done signal
+                  o_done_trigger <= HIGH; // Send done signal
                end
             end else begin
-               current_cell = current_cell + 1;
-               state = FETCH_DATA;
+               current_cell <= current_cell + 1;
+               state <= FETCH_DATA;
             end
          end
       endcase
@@ -99,8 +99,8 @@
    // External Start Trigger Logic
    always_ff @(posedge clk) begin
       if (i_start == HIGH) begin
-         state = FETCH_DATA;
-         o_done_trigger = LOW;
+         state <= FETCH_DATA;
+         o_done_trigger <= LOW;
       end
    end
 
@@ -121,53 +121,53 @@
    always_ff @(posedge clk) begin
       case (fetch_data_counter)
          default: begin
-            fetch_operation_memory_operation_address = 6'b000000;
-            local_game_board = 9'b000000000;
+            fetch_operation_memory_operation_address <= 6'b000000;
+            local_game_board <= 9'b000000000;
          end
 
          4'b0000: begin // Local Board Cell 0
-            fetch_operation_memory_operation_address = {`ROW_INDEX - 3'd1, `COLUMN_INDEX - 3'd1};
-            local_game_board[0] = i_data;
+            fetch_operation_memory_operation_address <= {`ROW_INDEX - 3'd1, `COLUMN_INDEX - 3'd1};
+            local_game_board[0] <= i_data;
          end
 
          4'b0001: begin // Local Board Cell 1
-            fetch_operation_memory_operation_address = {`ROW_INDEX - 3'd1, `COLUMN_INDEX};
-            local_game_board[1] = i_data;
+            fetch_operation_memory_operation_address <= {`ROW_INDEX - 3'd1, `COLUMN_INDEX};
+            local_game_board[1] <= i_data;
          end
 
          4'b0010: begin // Local Board Cell 2
-            fetch_operation_memory_operation_address = {`ROW_INDEX - 3'd1, `COLUMN_INDEX + 3'd1};
-            local_game_board[2] = i_data;
+            fetch_operation_memory_operation_address <= {`ROW_INDEX - 3'd1, `COLUMN_INDEX + 3'd1};
+            local_game_board[2] <= i_data;
          end
 
          4'b0011: begin // Local Board Cell 3
-            fetch_operation_memory_operation_address = {`ROW_INDEX, `COLUMN_INDEX - 3'd1};
-            local_game_board[3] = i_data;
+            fetch_operation_memory_operation_address <= {`ROW_INDEX, `COLUMN_INDEX - 3'd1};
+            local_game_board[3] <= i_data;
          end
 
          4'b0100: begin // Local Board Cell 4
-            fetch_operation_memory_operation_address = {`ROW_INDEX, `COLUMN_INDEX};
-            local_game_board[4] = i_data;
+            fetch_operation_memory_operation_address <= {`ROW_INDEX, `COLUMN_INDEX};
+            local_game_board[4] <= i_data;
          end
 
          4'b0101: begin // Local Board Cell 5
-            fetch_operation_memory_operation_address = {`ROW_INDEX, `COLUMN_INDEX + 3'd1};
-            local_game_board[5] = i_data;
+            fetch_operation_memory_operation_address <= {`ROW_INDEX, `COLUMN_INDEX + 3'd1};
+            local_game_board[5] <= i_data;
          end
 
          4'b0110: begin // Local Board Cell 6
-            fetch_operation_memory_operation_address = {`ROW_INDEX + 3'd1, `COLUMN_INDEX - 3'd1};
-            local_game_board[6] = i_data;
+            fetch_operation_memory_operation_address <= {`ROW_INDEX + 3'd1, `COLUMN_INDEX - 3'd1};
+            local_game_board[6] <= i_data;
          end
 
          4'b0111: begin // Local Board Cell 7
-            fetch_operation_memory_operation_address = {`ROW_INDEX + 3'd1, `COLUMN_INDEX};
-            local_game_board[7] = i_data;
+            fetch_operation_memory_operation_address <= {`ROW_INDEX + 3'd1, `COLUMN_INDEX};
+            local_game_board[7] <= i_data;
          end
 
          4'b1000: begin // Local Board Cell 8
-            fetch_operation_memory_operation_address = {`ROW_INDEX + 3'd1, `COLUMN_INDEX + 3'd1};
-            local_game_board[8] = i_data;
+            fetch_operation_memory_operation_address <= {`ROW_INDEX + 3'd1, `COLUMN_INDEX + 3'd1};
+            local_game_board[8] <= i_data;
          end
       endcase
    end
@@ -175,7 +175,7 @@
    // Fetch Local Game Board Data Counter; Counter Reset by Main State Machine
    always_ff @(posedge clk) begin
       if (state == FETCH_DATA) begin
-         fetch_data_counter = fetch_data_counter + 1;
+         fetch_data_counter <= fetch_data_counter + 1;
       end
    end
 

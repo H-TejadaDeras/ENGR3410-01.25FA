@@ -14,7 +14,6 @@
 // `begin_keywords "1800-2005" // SystemVerilog-2005
 `include "cgol_logic.sv"
 `include "memory_controller.sv"
-`include "ws2812b.sv"
 
 module top (
     input logic clk,
@@ -26,12 +25,12 @@ module top (
     localparam LOW = 1'b0;
 
     localparam PROCESS_GAME_STATE = 2'b00;
-    localparam ADD_COLOR_INFO = 2'b01;
-    localparam WS2812B_CONTROLLER_OUTPUT = 2'b10;
-    localparam WS2812B_CONTROLLER_PAUSE = 2'b11;
+    localparam CYCLE_REGISTERS = 2'b01;
+    localparam PROCESS_OUTPUT = 2'b10;
+    localparam PAUSE = 2'b11;
 
     logic [23:0] shift_reg = 24'd0;
-    logic [1:0] state_top = 2'b11;
+    logic [1:0] state_top = PAUSE;
 
     // Net Declarations
     logic u1_start_trigger = LOW;
@@ -66,35 +65,66 @@ module top (
         .o_data         (u1_i_data)
     );
 
-    // WS2812B output driver
-    // ws2812b u4 (
-    //     .clk            (clk), 
-    //     .serial_in      (shift_reg[23]), 
-    //     .transmit       (transmit_pixel), 
-    //     .ws2812b_out    (ws2812b_out), 
-    //     .shift          (shift)
+    // cgol_logic u3 (
+    //     .clk                        (clk),
+    //     .i_data                     (u1_i_data),
+    //     .i_start                    (u1_i_start),
+    //     .memory_operation           (u1_memory_operation),
+    //     .memory_operation_address   (u1_memory_operation_address),
+    //     .o_data                     (u1_o_data),
+    //     .o_done                     (u1_o_done)
+    // );
+    
+    // memory_controller #(
+    //     .MEM_INIT_FILE  ("cgol_seeds/toad_tester.bin")
+    // ) u4 (
+    //     .clk            (clk),
+    //     .operation      (u1_memory_operation),
+    //     .reg_address    (u1_memory_operation_address),
+    //     .i_data         (u1_o_data),
+    //     .o_data         (u1_i_data)
+    // );
+
+    // cgol_logic u5 (
+    //     .clk                        (clk),
+    //     .i_data                     (u1_i_data),
+    //     .i_start                    (u1_i_start),
+    //     .memory_operation           (u1_memory_operation),
+    //     .memory_operation_address   (u1_memory_operation_address),
+    //     .o_data                     (u1_o_data),
+    //     .o_done                     (u1_o_done)
+    // );
+    
+    // memory_controller #(
+    //     .MEM_INIT_FILE  ("cgol_seeds/toad_tester.bin")
+    // ) u6 (
+    //     .clk            (clk),
+    //     .operation      (u1_memory_operation),
+    //     .reg_address    (u1_memory_operation_address),
+    //     .i_data         (u1_o_data),
+    //     .o_data         (u1_i_data)
     // );
 
     // Top State Machine
     always_ff @(posedge clk) begin
         case (state_top)
             PROCESS_GAME_STATE: begin
-                u1_start_trigger = HIGH;
+                u1_start_trigger <= HIGH;
             end
 
-            ADD_COLOR_INFO: begin
-                u1_start_trigger = LOW;
-                state_top = WS2812B_CONTROLLER_OUTPUT;
+            CYCLE_REGISTERS: begin
+                u1_start_trigger <= LOW;
+                state_top = PROCESS_OUTPUT;
             end
 
-            WS2812B_CONTROLLER_OUTPUT: begin
-                u1_start_trigger = LOW;
-                state_top = WS2812B_CONTROLLER_PAUSE;
+            PROCESS_OUTPUT: begin
+                u1_start_trigger <= LOW;
+                state_top <= PAUSE;
             end
 
-            WS2812B_CONTROLLER_PAUSE: begin
-                u1_start_trigger = LOW;
-                state_top = PROCESS_GAME_STATE;
+            PAUSE: begin
+                u1_start_trigger <= LOW;
+                state_top <= PROCESS_GAME_STATE;
             end
         endcase
     end
@@ -115,14 +145,14 @@ module top (
     // Next Step Trigger from CGOL_Logic Module
     always_ff @(posedge clk) begin
         if (u1_o_done == HIGH) begin
-            state_top = ADD_COLOR_INFO;
+            state_top <= CYCLE_REGISTERS;
         end
     end
 
     // Start Game Trigger from User - Not functional currently, top state machine must be more developed
     always_ff @(posedge clk) begin
         if (SW == HIGH) begin
-            state_top = PROCESS_GAME_STATE;
+            state_top <= PROCESS_GAME_STATE;
         end
     end
 
