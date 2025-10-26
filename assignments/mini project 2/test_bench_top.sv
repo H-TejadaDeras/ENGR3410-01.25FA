@@ -1,6 +1,6 @@
 /*
  *  Smooth RGB LED Test Bench
- *  Henry Tejada Deras - TBD
+ *  Henry Tejada Deras - 10-02-2025
  */
 // `begin_keywords "1800-2005" // SystemVerilog-2005
 `timescale 10ns/10ns

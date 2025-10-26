@@ -11,6 +11,7 @@
  *  
  *  Outputs:
  *  logic ws2812b_out: Data in pulses for WS2812B LED array.
+ *  logic shift: Trigger to shift in new value from shift register.
  */ 
 
 module ws2812b(
