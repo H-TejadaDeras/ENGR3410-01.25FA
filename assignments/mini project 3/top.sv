@@ -34,14 +34,14 @@ module top (
     logic [1:0] state_top = 2'b11;
 
     // Net Declarations
-    logic u1_start_trigger;
+    logic u1_start_trigger = LOW;
     logic u1_i_data;
     logic u1_i_start;
     logic [1:0] u1_memory_operation;
     logic [5:0] u1_memory_operation_address;
     logic u1_o_data;
     logic u1_o_done;
-    logic u1_start_trigger_save;
+    logic u1_start_trigger_save = LOW;
 
     logic ws2812b_out;
 
@@ -88,10 +88,12 @@ module top (
             end
 
             WS2812B_CONTROLLER_OUTPUT: begin
+                u1_start_trigger = LOW;
                 state_top = WS2812B_CONTROLLER_PAUSE;
             end
 
             WS2812B_CONTROLLER_PAUSE: begin
+                u1_start_trigger = LOW;
                 state_top = PROCESS_GAME_STATE;
             end
         endcase
@@ -100,13 +102,12 @@ module top (
     // Start Processing Data Trigger
     always_ff @(posedge clk) begin
         if (u1_start_trigger == HIGH && u1_start_trigger_save == LOW) begin
-            if (u1_i_start == LOW) begin
-                u1_i_start <= HIGH;
-                u1_start_trigger_save <= HIGH;
-            end else begin
-                u1_i_start <= LOW;
-            end
-        end else if (u1_start_trigger == LOW) begin
+            u1_i_start <= HIGH;
+            u1_start_trigger_save <= HIGH;
+        end else if (u1_start_trigger == HIGH && u1_start_trigger_save == HIGH) begin // makes start signal 1 clk period long
+            u1_i_start <= LOW;
+        end else if (u1_start_trigger == LOW) begin // start trigger low -> save low, start should already be low
+            u1_i_start <= LOW;
             u1_start_trigger_save <= LOW;
         end
     end

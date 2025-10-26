@@ -54,6 +54,9 @@
    logic [8:0] cgol_cell_i_local_game_board;
    logic cgol_cell_o_cell;
 
+   logic o_done_trigger = LOW;
+   logic o_done_trigger_save = LOW;
+
    // Main State Machine + Memory Controller Interface
    always_ff @(posedge clk) begin
       case (state)
@@ -83,7 +86,7 @@
             if (current_cell == 5'b11111) begin // last cell
                current_cell = 0;
                if (i_start == LOW) begin
-                  o_done = HIGH; // Send done signal
+                  o_done_trigger = HIGH; // Send done signal
                end
             end else begin
                current_cell = current_cell + 1;
@@ -97,7 +100,20 @@
    always_ff @(posedge clk) begin
       if (i_start == HIGH) begin
          state = FETCH_DATA;
-         o_done = LOW;
+         o_done_trigger = LOW;
+      end
+   end
+
+   // Done Signal Logic
+   always_ff @(posedge clk) begin
+      if (o_done_trigger == HIGH && o_done_trigger_save == LOW) begin
+         o_done <= HIGH;
+         o_done_trigger_save <= HIGH;
+      end else if (o_done_trigger == HIGH && o_done_trigger_save == HIGH) begin // makes done signal 1 clk period long
+         o_done <= LOW;
+      end else if (o_done_trigger == LOW) begin // done trigger low -> save low, done should already be low
+         o_done <= LOW;
+         o_done_trigger_save <= LOW;
       end
    end
 
