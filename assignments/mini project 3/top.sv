@@ -38,7 +38,7 @@ module top (
     logic [23:0] shift_reg = 24'd0;
     logic [1:0] state_top = PAUSE;
 
-    logic [6:0] cycle_reg_counter = 0;
+    logic [5:0] cycle_reg_counter = 0;
     logic [$clog2(PAUSED_STATE_CLK_CYCLES):0] paused_state_counter = 0;
 
     // Net Declarations
@@ -301,7 +301,7 @@ module top (
     always_ff @(posedge clk) begin
         if (state_top == CYCLE_REGISTERS) begin
             cycle_reg_counter <= cycle_reg_counter + 1;
-            if (cycle_reg_counter >= 6'b100000) begin
+            if (cycle_reg_counter >= 6'b111111) begin
                 state_top <= PROCESS_OUTPUT;
                 cycle_reg_counter <= 0;
             end

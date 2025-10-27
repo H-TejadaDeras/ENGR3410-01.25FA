@@ -43,7 +43,7 @@
    localparam READ_REG = 2'b00; // Read from read-only register (from memory_controller.sv)
    localparam WRITE_REG = 2'b01; // Write to write-only register (from memory_controller.sv)
 
-   logic [5:0] current_cell = 5'b11111; // Used to keep track of which is the current cell being simulated; initialized as 5'b11111 to prevent initialization reset from immediately starting fetch sequence
+   logic [5:0] current_cell = 6'b111111; // Used to keep track of which is the current cell being simulated; initialized as 5'b11111 to prevent initialization reset from immediately starting fetch sequence
    logic [8:0] local_game_board = 0;
    logic [1:0] state = RESET; // to start initially in a fresh, reset state
 
@@ -83,11 +83,13 @@
 
          RESET: begin
             cgol_cell_i_local_game_board <= 0;
-            if (current_cell == 5'b11111) begin // last cell
+            if (current_cell == 6'b111111) begin // last cell
                current_cell <= 0;
-               if (i_start == LOW) begin
-                  o_done_trigger <= HIGH; // Send done signal
-               end
+               o_done_trigger <= HIGH; // Send done signal
+               state <= RESET;
+               // if (i_start == LOW) begin
+               //    o_done_trigger <= HIGH; // Send done signal
+               // end
             end else begin
                current_cell <= current_cell + 1;
                state <= FETCH_DATA;
