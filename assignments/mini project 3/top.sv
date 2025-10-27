@@ -29,8 +29,13 @@ module top (
     localparam PROCESS_OUTPUT = 2'b10;
     localparam PAUSE = 2'b11;
 
+    localparam CYCLE_REG = 2'b11; // From memory_controller.sv
+    localparam IDLE = 2'b10; // From memory_controller.sv
+
     logic [23:0] shift_reg = 24'd0;
     logic [1:0] state_top = PAUSE;
+
+    logic [6:0] cycle_reg_counter = 0;
 
     // Net Declarations
     logic u1_start_trigger = LOW;
@@ -105,7 +110,19 @@ module top (
     //     .o_data         (u1_i_data)
     // );
 
-    // Top State Machine
+    output_controller u7 (
+        .clk                        (),
+        .i_data_in_1                (),
+        .i_data_in_2                (),
+        .i_data_in_3                (),
+        .i_start                    (),
+        .o_done                     (),
+        .o_memory_operation         (),
+        .o_memory_operation_address (),
+        .o_led_matrix               ()
+    );
+
+    // Top State Machine + Switch Net Drivers
     always_ff @(posedge clk) begin
         case (state_top)
             PROCESS_GAME_STATE: begin
@@ -114,7 +131,6 @@ module top (
 
             CYCLE_REGISTERS: begin
                 u1_start_trigger <= LOW;
-                state_top = PROCESS_OUTPUT;
             end
 
             PROCESS_OUTPUT: begin
@@ -156,8 +172,19 @@ module top (
         end
     end
 
-    // Timers
+    // Cycle Registers Operation Counter
+    always_ff @(posedge clk) begin
+        if (state_top == CYCLE_REGISTERS) begin
+            u1_memory_operation <= CYCLE_REG;
+            cycle_reg_counter <= cycle_reg_counter + 1;
+            if (cycle_reg_counter >= 6'b100000) begin
+                state_top <= PROCESS_OUTPUT;
+                u1_memory_operation <= IDLE;
+                cycle_reg_counter <= 0;
+            end
+        end
+    end
 
-    // assign _31b = ws2812b_out;
+    assign _31b = o_led_matrix;
 endmodule
 // `end_keywords "1800-2005" // SystemVerilog-2005
