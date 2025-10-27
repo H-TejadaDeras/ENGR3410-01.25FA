@@ -136,6 +136,7 @@ module output_controller(
     // Update Current Cell and State Machine State
     always_ff @(posedge clk) begin
         if (shift_reg_counter >= 5'd23) begin
+            shift_reg_counter <= 0;
             if (current_cell == 6'b111111) begin
                 state_output <= IDLE;
                 o_done_trigger <= HIGH;

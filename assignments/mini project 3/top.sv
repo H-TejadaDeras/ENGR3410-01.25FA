@@ -33,10 +33,13 @@ module top (
     localparam CYCLE_REG = 2'b11; // From memory_controller.sv
     localparam IDLE = 2'b10; // From memory_controller.sv
 
+    parameter PAUSED_STATE_CLK_CYCLES = 1200000; // 1200000 cycles is 0.1 s on a 12 MHz clk
+
     logic [23:0] shift_reg = 24'd0;
     logic [1:0] state_top = PAUSE;
 
     logic [6:0] cycle_reg_counter = 0;
+    logic [$clog2(PAUSED_STATE_CLK_CYCLES):0] paused_state_counter = 0;
 
     // Net Declarations
     logic o_led_matrix;
@@ -220,7 +223,6 @@ module top (
                 cgol2_start_trigger <= LOW;
                 cgol3_start_trigger <= LOW;
                 outctrl_start_trigger <= LOW;
-                state_top <= PROCESS_GAME_STATE;
             end
         endcase
     end
@@ -288,7 +290,7 @@ module top (
         end
     end
 
-    // Start Game Trigger from User - Not functional currently, top state machine must be more developed
+    // Start Game Trigger from User
     always_ff @(posedge clk) begin
         if (SW == HIGH) begin
             state_top <= PROCESS_GAME_STATE;
@@ -302,6 +304,17 @@ module top (
             if (cycle_reg_counter >= 6'b100000) begin
                 state_top <= PROCESS_OUTPUT;
                 cycle_reg_counter <= 0;
+            end
+        end
+    end
+
+    // Paused State Timer
+    always_ff @(posedge clk) begin
+        if (state_top == PAUSE) begin
+            paused_state_counter <= paused_state_counter + 1;
+            if (paused_state_counter >= PAUSED_STATE_CLK_CYCLES) begin
+                paused_state_counter <= 0;
+                state_top <= PROCESS_GAME_STATE;
             end
         end
     end
