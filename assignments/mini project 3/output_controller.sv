@@ -134,7 +134,7 @@ module output_controller(
    end
 
     // Update Current Cell and State Machine State
-    always_comb begin
+    always_ff @(posedge clk) begin
         if (shift_reg_counter >= 5'd23) begin
             if (current_cell == 6'b111111) begin
                 state_output <= IDLE;
