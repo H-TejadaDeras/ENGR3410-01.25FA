@@ -13,7 +13,7 @@
  *  Inputs:
  *  logic clk: Clock signal
  *  logic i_data: Data input from memory controller.
- *  logic i_start: Trigger to start state machine; from top state machine.
+ *  logic i_state_top: Current state of top state machine.
  *  
  *  Outputs:
  *  logic [1:0] memory_operation: Memory operation output for memory
@@ -31,14 +31,14 @@
 `define COLUMN_INDEX current_cell[2:0]
 
 module cgol_logic(
-   input   logic       clk,
-   input   logic       i_data,
-   input   logic       i_start,
-   output  logic [1:0] memory_operation,
-   output  logic [   5:0] memory_operation_address,
-   output  logic       o_data,
-   output  logic       o_done
-);
+    input   logic       clk,
+    input   logic       i_data,
+    input   logic [1:0] i_state_top,
+    output  logic [1:0] memory_operation,
+    output  logic [5:0] memory_operation_address,
+    output  logic       o_data,
+    output  logic       o_done
+ );
    // Variable Declarations
    localparam HIGH = 1'b1;
    localparam LOW = 1'b0;
@@ -47,6 +47,11 @@ module cgol_logic(
    localparam PROCESS_DATA = 2'b01;
    localparam SAVE_DATA = 2'b10;
    localparam RESET = 2'b11;
+
+   localparam PROCESS_GAME_STATE = 2'b00; // cgol_logic module active (from top.sv)
+   localparam CYCLE_REGISTERS = 2'b01; // cgol_logic module inactive (from top.sv)
+   localparam PROCESS_OUTPUT = 2'b10; // cgol_logic module inactive (from top.sv)
+   localparam PAUSE = 2'b11; // cgol_logic module inactive (from top.sv)
 
    localparam READ_REG = 2'b00; // Read from read-only register (from memory_controller.sv)
    localparam WRITE_REG = 2'b01; // Write to write-only register (from memory_controller.sv)
@@ -94,23 +99,20 @@ module cgol_logic(
             cgol_cell_i_local_game_board <= 0;
             if (current_cell == 6'b111111) begin // last cell
                current_cell <= 0;
-               o_done_trigger <= HIGH; // Send done signal
+               if (i_state_top == PROCESS_GAME_STATE) begin
+                  o_done_trigger <= HIGH; // Send done signal
+               end
                state <= RESET;
-               // if (i_start == LOW) begin
-               //    o_done_trigger <= HIGH; // Send done signal
-               // end
             end else begin
-               current_cell <= current_cell + 1;
-               state <= FETCH_DATA;
+               // Start Logic
+               if (i_state_top == PROCESS_GAME_STATE && o_done_trigger == LOW) begin
+                  current_cell <= current_cell + 1;
+                  o_done_trigger <= LOW;
+                  state <= FETCH_DATA;
+               end
             end
          end
       endcase
-
-      // External Start Trigger Logic
-      if (i_start == HIGH) begin
-         state <= FETCH_DATA;
-         o_done_trigger <= LOW;
-      end
 
       // Done Signal Logic
       if (o_done_trigger == HIGH && o_done_trigger_save == LOW) begin

@@ -40,8 +40,8 @@ module memory_controller #(
     localparam CYCLE_REG = 2'b11; // Transfer contents from write-only register to read-only register
     localparam IDLE = 2'b10; // Do no operation
 
-    logic read_register [63:0];
-    logic write_register [63:0];
+    logic read_register [0:63];
+    logic write_register [0:63];
 
     logic [5:0] address_counter = 0; // Used to transfer contents from write-only register to read-only register
 
