@@ -34,7 +34,6 @@ module top (
 
     parameter PAUSED_STATE_CLK_CYCLES = 1200000; // 1200000 cycles is 0.1 s on a 12 MHz clk
 
-    logic [23:0] shift_reg = 24'd0;
     logic [1:0] state_top = PAUSE;
 
     logic [5:0] cycle_reg_counter = 0;
@@ -89,8 +88,8 @@ module top (
     logic outctrl_i_data_in_1;
     logic outctrl_i_data_in_2;
     logic outctrl_i_data_in_3;
-    logic outctrl_memory_operation;
-    logic outctrl_memory_operation_address;
+    logic [1:0] outctrl_memory_operation;
+    logic [5:0] outctrl_memory_operation_address;
 
     // Module Declarations
     cgol_logic u1 (

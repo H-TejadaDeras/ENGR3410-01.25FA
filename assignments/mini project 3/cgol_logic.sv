@@ -12,8 +12,16 @@
  *  
  *  Inputs:
  *  logic clk: Clock signal
+ *  logic i_data: Data input from memory controller.
+ *  logic i_start: Trigger to start state machine; from top state machine.
  *  
  *  Outputs:
+ *  logic [1:0] memory_operation: Memory operation output for memory
+ *      controller.
+ *  logic [5:0] memory_operation_address: Address to which to do memory
+ *      operation.
+ *  logic o_data: Data output to memory controller.
+ *  logic o_done: Done trigger for top state machine.
  */ 
 // `begin_keywords "1800-2005" // SystemVerilog-2005
 `include "cgol_cell.sv"
@@ -22,15 +30,15 @@
 `define ROW_INDEX current_cell[5:3]
 `define COLUMN_INDEX current_cell[2:0]
 
- module cgol_logic(
-    input   logic       clk,
-    input   logic       i_data, // from memory controller
-    input   logic       i_start, // from top state machine; trigger to start state machine
-    output  logic [1:0] memory_operation, // to memory controller
-    output  logic [5:0] memory_operation_address, // to memory controller
-    output  logic       o_data, // to memory controller
-    output  logic       o_done // to top state machine; trigger to start next step
- );
+module cgol_logic(
+   input   logic       clk,
+   input   logic       i_data,
+   input   logic       i_start,
+   output  logic [1:0] memory_operation,
+   output  logic [   5:0] memory_operation_address,
+   output  logic       o_data,
+   output  logic       o_done
+);
    // Variable Declarations
    localparam HIGH = 1'b1;
    localparam LOW = 1'b0;

@@ -14,9 +14,9 @@
  *  Outputs:
  *  logic o_done: Done signal for state machine in top.sv, used to trigger next
  *      state.
- *  logic o_memory_operation: Memory operation command for memory_controller
- *      module.
- *  logic o_memory_operation_address: Memory operation address for
+ *  logic [1:0] o_memory_operation: Memory operation command for
+ *      memory_controller module.
+ *  logic [5:0] o_memory_operation_address: Memory operation address for
  *      memory_controller.
  *  logic o_led_matrix: Output to WS2812B LED Matrix
  */ 
@@ -30,8 +30,8 @@ module output_controller(
     input logic i_data_in_3,
     input logic i_start,
     output logic o_done,
-    output logic o_memory_operation,
-    output logic o_memory_operation_address,
+    output logic [1:0] o_memory_operation,
+    output logic [5:0] o_memory_operation_address,
     output logic o_led_matrix
 );
     // Variable Declarations
