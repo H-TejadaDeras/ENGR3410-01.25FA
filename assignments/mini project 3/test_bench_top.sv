@@ -13,7 +13,6 @@ module test_bench_top;
 
     top u0 (
         .clk    (clk), 
-        .SW     (SW),
         ._31b   (led_matrix_input)
     );
 

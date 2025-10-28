@@ -18,7 +18,6 @@
 
 module top (
     input logic clk,
-    input logic SW,
     output logic _31b
 );
     // Variable Declarations
@@ -166,8 +165,8 @@ module top (
         .o_led_matrix               (o_led_matrix)
     );
 
-    // Top State Machine + Switch Net Drivers
     always_ff @(posedge clk) begin
+        // Top State Machine + Switch Net Drivers
         case (state_top)
             PROCESS_GAME_STATE: begin
                 cgol1_start_trigger <= HIGH;
@@ -225,10 +224,8 @@ module top (
                 outctrl_start_trigger <= LOW;
             end
         endcase
-    end
 
-    // Start Processing Data Trigger
-    always_ff @(posedge clk) begin
+        // Start Processing Data Trigger
         if (cgol1_start_trigger == HIGH && cgol1_start_trigger_save == LOW) begin
             cgol1_i_start <= HIGH;
             cgol1_start_trigger_save <= HIGH;
@@ -238,9 +235,7 @@ module top (
             cgol1_i_start <= LOW;
             cgol1_start_trigger_save <= LOW;
         end
-    end
 
-    always_ff @(posedge clk) begin
         if (cgol2_start_trigger == HIGH && cgol2_start_trigger_save == LOW) begin
             cgol2_i_start <= HIGH;
             cgol2_start_trigger_save <= HIGH;
@@ -250,9 +245,7 @@ module top (
             cgol2_i_start <= LOW;
             cgol2_start_trigger_save <= LOW;
         end
-    end
 
-    always_ff @(posedge clk) begin
         if (cgol3_start_trigger == HIGH && cgol3_start_trigger_save == LOW) begin
             cgol3_i_start <= HIGH;
             cgol3_start_trigger_save <= HIGH;
@@ -262,9 +255,7 @@ module top (
             cgol3_i_start <= LOW;
             cgol3_start_trigger_save <= LOW;
         end
-    end
 
-    always_ff @(posedge clk) begin
         if (outctrl_start_trigger == HIGH && outctrl_start_trigger_save == LOW) begin
             outctrl_start <= HIGH;
             outctrl_start_trigger_save <= HIGH;
@@ -274,31 +265,18 @@ module top (
             outctrl_start <= LOW;
             outctrl_start_trigger_save <= LOW;
         end
-    end
 
-    // Next Step Trigger from CGOL_Logic Module
-    always_ff @(posedge clk) begin
+        // Next Step Trigger from CGOL_Logic Module
         if (cgol1_o_done == HIGH) begin
             state_top <= CYCLE_REGISTERS;
         end
-    end
 
-    // Next Step Trigger from Output_Controller Module
-    always_ff @(posedge clk) begin
+        // Next Step Trigger from Output_Controller Module
         if (outctrl_done == HIGH) begin
             state_top <= PAUSE;
         end
-    end
 
-    // Start Game Trigger from User
-    always_ff @(posedge clk) begin
-        if (SW == HIGH) begin
-            state_top <= PROCESS_GAME_STATE;
-        end
-    end
-
-    // Cycle Registers Operation Counter
-    always_ff @(posedge clk) begin
+        // Cycle Registers Operation Counter
         if (state_top == CYCLE_REGISTERS) begin
             cycle_reg_counter <= cycle_reg_counter + 1;
             if (cycle_reg_counter >= 6'b111111) begin
@@ -306,10 +284,8 @@ module top (
                 cycle_reg_counter <= 0;
             end
         end
-    end
 
-    // Paused State Timer
-    always_ff @(posedge clk) begin
+        // Paused State Timer
         if (state_top == PAUSE) begin
             paused_state_counter <= paused_state_counter + 1;
             if (paused_state_counter >= PAUSED_STATE_CLK_CYCLES) begin

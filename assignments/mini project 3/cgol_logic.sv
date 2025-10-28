@@ -57,8 +57,9 @@
    logic o_done_trigger = LOW;
    logic o_done_trigger_save = LOW;
 
-   // Main State Machine + Memory Controller Interface
+   
    always_ff @(posedge clk) begin
+      // Main State Machine + Memory Controller Interface
       case (state)
          FETCH_DATA: begin
             memory_operation <= READ_REG;
@@ -96,18 +97,14 @@
             end
          end
       endcase
-   end
 
-   // External Start Trigger Logic
-   always_ff @(posedge clk) begin
+      // External Start Trigger Logic
       if (i_start == HIGH) begin
          state <= FETCH_DATA;
          o_done_trigger <= LOW;
       end
-   end
 
-   // Done Signal Logic
-   always_ff @(posedge clk) begin
+      // Done Signal Logic
       if (o_done_trigger == HIGH && o_done_trigger_save == LOW) begin
          o_done <= HIGH;
          o_done_trigger_save <= HIGH;
@@ -117,10 +114,8 @@
          o_done <= LOW;
          o_done_trigger_save <= LOW;
       end
-   end
 
-   // Create Local Game Board
-   always_ff @(posedge clk) begin
+      // Create Local Game Board
       case (fetch_data_counter)
          default: begin
             fetch_operation_memory_operation_address <= 6'b000000;
@@ -172,10 +167,8 @@
             local_game_board[8] <= i_data;
          end
       endcase
-   end
 
-   // Fetch Local Game Board Data Counter; Counter Reset by Main State Machine
-   always_ff @(posedge clk) begin
+      // Fetch Local Game Board Data Counter; Counter Reset by Main State Machine
       if (state == FETCH_DATA) begin
          fetch_data_counter <= fetch_data_counter + 1;
       end

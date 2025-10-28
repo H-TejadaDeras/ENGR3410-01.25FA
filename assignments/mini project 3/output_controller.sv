@@ -69,8 +69,8 @@ module output_controller(
         .shift          (shift_reg_command)
     );
 
-    // Module State Machine
     always_ff @(posedge clk) begin
+        // Module State Machine
         case(state_output)
             GET_CELL_STATE: begin
                 current_cell <= current_cell + 1;
@@ -113,28 +113,20 @@ module output_controller(
                 transmit_command <= IDLE_DRIVER;
             end
         endcase
-    end
 
-    assign o_memory_operation_address = current_cell;
-
-    // LED Matrix Output Shift Register
-    always_ff @(posedge clk) begin
+        // LED Matrix Output Shift Register
         if (shift_reg_command == HIGH) begin
             shift_reg <= { shift_reg[22:0], 1'b0 };
             shift_reg_counter <= shift_reg_counter + 1;
         end
-    end
 
-   // External Start Trigger Logic
-   always_ff @(posedge clk) begin
+       // External Start Trigger Logic
       if (i_start == HIGH) begin
          state_output <= GET_CELL_STATE;
          o_done_trigger <= LOW;
       end
-   end
 
-    // Update Current Cell and State Machine State
-    always_ff @(posedge clk) begin
+        // Update Current Cell and State Machine State
         if (shift_reg_counter >= 5'd23) begin
             shift_reg_counter <= 0;
             if (current_cell == 6'b111111) begin
@@ -144,10 +136,8 @@ module output_controller(
                 state_output <= GET_CELL_STATE;
             end
         end
-    end
 
-    // Done Signal Logic
-    always_ff @(posedge clk) begin
+        // Done Signal Logic
         if (o_done_trigger == HIGH && o_done_trigger_save == LOW) begin
             o_done <= HIGH;
             o_done_trigger_save <= HIGH;
@@ -158,5 +148,7 @@ module output_controller(
             o_done_trigger_save <= LOW;
         end
     end
+
+    assign o_memory_operation_address = current_cell;
 endmodule
 // `end_keywords "1800-2005" // SystemVerilog-2005
