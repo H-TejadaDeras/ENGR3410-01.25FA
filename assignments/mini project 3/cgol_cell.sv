@@ -31,7 +31,7 @@ module cgol_cell(
     localparam ALIVE = 1'b1;
     localparam DEAD = 1'b0;
     logic [3:0] alive_neighbors_count = 0;
-    logic current_cell_state = i_local_game_board[5];
+    logic current_cell_state = 0;
 
     // Count Alive Neighbors to Cell; Cell 5 is omitted since that is current cell
     always_comb begin
@@ -39,6 +39,7 @@ module cgol_cell(
             i_local_game_board[2] + i_local_game_board[3] + 
             i_local_game_board[4] + i_local_game_board[6] + 
             i_local_game_board[7] + i_local_game_board[8];
+        current_cell_state = i_local_game_board[5];
     end
 
     // Apply Alive/Dead Conditions

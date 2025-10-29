@@ -56,11 +56,18 @@ module cgol_logic(
    localparam READ_REG = 2'b00; // Read from read-only register (from memory_controller.sv)
    localparam WRITE_REG = 2'b01; // Write to write-only register (from memory_controller.sv)
 
+   localparam READ_ENTRY_CLK_CYCLES = 4;
+   localparam PROCESS_DATA_CLK_CYCLES = 4;
+   localparam WRITE_ENTRY_CLK_CYCLES = 4;
+
    logic [5:0] current_cell = 6'b111111; // Used to keep track of which is the current cell being simulated; initialized as 5'b11111 to prevent initialization reset from immediately starting fetch sequence
    logic [8:0] local_game_board = 0;
    logic [1:0] state = RESET; // to start initially in a fresh, reset state
 
    logic [3:0] fetch_data_counter = 0; // Counter used to keep track of which data has been fetched
+   logic [$clog2(READ_ENTRY_CLK_CYCLES):0] read_entry_counter = 0;
+   logic [$clog2(PROCESS_DATA_CLK_CYCLES):0] process_data_counter = 0;
+   logic [$clog2(WRITE_ENTRY_CLK_CYCLES):0] write_entry_counter = 0;
 
    // Net Declarations
    logic [5:0] fetch_operation_memory_operation_address; // Used to control which address gets sent to memory controller
@@ -77,22 +84,38 @@ module cgol_logic(
          FETCH_DATA: begin
             memory_operation <= READ_REG;
             memory_operation_address <= fetch_operation_memory_operation_address;
-            if (fetch_data_counter >= 4'b1000) begin // Got last local game board cell entry
-               fetch_data_counter <= 0;
-               state <= PROCESS_DATA;
+            if (read_entry_counter >= READ_ENTRY_CLK_CYCLES) begin
+               fetch_data_counter <= fetch_data_counter + 1;
+               read_entry_counter <= 0;
+                  if (fetch_data_counter >= 4'b1000) begin // Got last local game board cell entry
+                     fetch_data_counter <= 0;
+                     state <= PROCESS_DATA;
+                  end
+            end else begin
+               read_entry_counter <= read_entry_counter + 1;
             end
          end
 
          PROCESS_DATA: begin
             cgol_cell_i_local_game_board <= local_game_board;
-            state <= SAVE_DATA;
+            if (process_data_counter >= PROCESS_DATA_CLK_CYCLES) begin
+               process_data_counter <= 0;
+               state <= SAVE_DATA;
+            end else begin
+               process_data_counter <= process_data_counter + 1;
+            end
          end
 
          SAVE_DATA: begin
             memory_operation <= WRITE_REG;
             memory_operation_address <= current_cell;
             o_data <= cgol_cell_o_cell;
-            state <= RESET;
+            if (write_entry_counter >= WRITE_ENTRY_CLK_CYCLES) begin
+               write_entry_counter <= 0;
+               state <= RESET;
+            end else begin
+               write_entry_counter <= write_entry_counter + 1;
+            end
          end
 
          RESET: begin
@@ -105,7 +128,7 @@ module cgol_logic(
                state <= RESET;
             end else begin
                // Start Logic
-               if (i_state_top == PROCESS_GAME_STATE && o_done_trigger == LOW) begin
+               if (i_state_top == PROCESS_GAME_STATE) begin
                   current_cell <= current_cell + 1;
                   o_done_trigger <= LOW;
                   state <= FETCH_DATA;
@@ -177,11 +200,6 @@ module cgol_logic(
             local_game_board[8] <= i_data;
          end
       endcase
-
-      // Fetch Local Game Board Data Counter; Counter Reset by Main State Machine
-      if (state == FETCH_DATA) begin
-         fetch_data_counter <= fetch_data_counter + 1;
-      end
    end
 
    // Calculate Cell Value at Next Stage

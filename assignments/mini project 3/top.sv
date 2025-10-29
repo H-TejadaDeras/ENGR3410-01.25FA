@@ -32,11 +32,13 @@ module top (
     localparam CYCLE_REG = 2'b11; // From memory_controller.sv
     localparam IDLE = 2'b10; // From memory_controller.sv
 
-    parameter PAUSED_STATE_CLK_CYCLES = 1200000; // 1200000 cycles is 0.1 s on a 12 MHz clk
+    localparam MEMORY_OPERATION_CLK_CYCLES = 4;
+    localparam PAUSED_STATE_CLK_CYCLES = 1200000; // 1200000 cycles is 0.1 s on a 12 MHz clk
 
     logic [1:0] state_top = PAUSE;
 
     logic [5:0] cycle_reg_counter = 0;
+    logic [$clog2(MEMORY_OPERATION_CLK_CYCLES):0] memory_operation_counter = 0;
     logic [$clog2(PAUSED_STATE_CLK_CYCLES):0] paused_state_counter = 0;
 
     // Net Declarations
@@ -247,10 +249,15 @@ module top (
 
         // Cycle Registers Operation Counter
         if (state_top == CYCLE_REGISTERS) begin
-            cycle_reg_counter <= cycle_reg_counter + 1;
-            if (cycle_reg_counter >= 6'b111111) begin
-                state_top <= PROCESS_OUTPUT;
-                cycle_reg_counter <= 0;
+            if (memory_operation_counter >= MEMORY_OPERATION_CLK_CYCLES) begin
+                memory_operation_counter <= 0;
+                cycle_reg_counter <= cycle_reg_counter + 1;
+                if (cycle_reg_counter >= 6'b111111) begin
+                    state_top <= PROCESS_OUTPUT;
+                    cycle_reg_counter <= 0;
+                end
+            end else begin
+                memory_operation_counter <= memory_operation_counter + 1;
             end
         end
 
