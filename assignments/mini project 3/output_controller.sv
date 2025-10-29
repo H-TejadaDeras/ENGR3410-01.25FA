@@ -81,21 +81,21 @@ module output_controller(
 
             ADD_COLOR_INFO: begin
                 if (i_data_in_1 == HIGH) begin // Red Color
-                    shift_reg[15:8] <= 8'b1;
+                    shift_reg[15:8] <= 8'b11111111;
                 end else begin
-                    shift_reg[15:8] <= 8'b0;
+                    shift_reg[15:8] <= 8'b00000000;
                 end
 
                 if (i_data_in_2 == HIGH) begin // Green Color
-                    shift_reg[23:16] <= 8'b1;
+                    shift_reg[23:16] <= 8'b11111111;
                 end else begin
-                    shift_reg[23:16] <= 8'b0;
+                    shift_reg[23:16] <= 8'b00000000;
                 end
 
                 if (i_data_in_3 == HIGH) begin // Blue Color
-                    shift_reg[7:0] <= 8'b1;
+                    shift_reg[7:0] <= 8'b11111111;
                 end else begin
-                    shift_reg[7:0] <= 8'b0;
+                    shift_reg[7:0] <= 8'b00000000;
                 end
 
                 o_memory_operation <= IDLE_MEMORY;

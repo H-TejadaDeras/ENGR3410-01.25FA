@@ -55,6 +55,7 @@ module cgol_logic(
 
    localparam READ_REG = 2'b00; // Read from read-only register (from memory_controller.sv)
    localparam WRITE_REG = 2'b01; // Write to write-only register (from memory_controller.sv)
+   localparam IDLE = 2'b10; // Do no operation (from memory_controller.sv)
 
    localparam READ_ENTRY_CLK_CYCLES = 4;
    localparam PROCESS_DATA_CLK_CYCLES = 4;
@@ -77,13 +78,43 @@ module cgol_logic(
    logic o_done_trigger = LOW;
    logic o_done_trigger_save = LOW;
 
-   
-   always_ff @(posedge clk) begin
-      // Main State Machine + Memory Controller Interface
+   // Memory Controller Interface
+   always_comb begin
       case (state)
          FETCH_DATA: begin
-            memory_operation <= READ_REG;
-            memory_operation_address <= fetch_operation_memory_operation_address;
+            memory_operation = READ_REG;
+            memory_operation_address = fetch_operation_memory_operation_address;
+            o_data = 1'bx;
+            cgol_cell_i_local_game_board = 0;
+         end
+
+         PROCESS_DATA: begin
+            memory_operation = IDLE;
+            memory_operation_address = 0;
+            o_data = 1'bx;
+            cgol_cell_i_local_game_board = local_game_board;
+         end
+
+         SAVE_DATA: begin
+            memory_operation = WRITE_REG;
+            memory_operation_address = current_cell;
+            o_data = cgol_cell_o_cell;
+            cgol_cell_i_local_game_board = local_game_board;
+         end
+
+         RESET: begin
+            memory_operation = IDLE;
+            memory_operation_address = 0;
+            o_data = 1'bx;
+            cgol_cell_i_local_game_board = 0;
+         end
+      endcase
+   end
+
+   always_ff @(posedge clk) begin
+      // Main State Machine
+      case (state)
+         FETCH_DATA: begin
             if (read_entry_counter >= READ_ENTRY_CLK_CYCLES) begin
                fetch_data_counter <= fetch_data_counter + 1;
                read_entry_counter <= 0;
@@ -97,7 +128,6 @@ module cgol_logic(
          end
 
          PROCESS_DATA: begin
-            cgol_cell_i_local_game_board <= local_game_board;
             if (process_data_counter >= PROCESS_DATA_CLK_CYCLES) begin
                process_data_counter <= 0;
                state <= SAVE_DATA;
@@ -107,9 +137,6 @@ module cgol_logic(
          end
 
          SAVE_DATA: begin
-            memory_operation <= WRITE_REG;
-            memory_operation_address <= current_cell;
-            o_data <= cgol_cell_o_cell;
             if (write_entry_counter >= WRITE_ENTRY_CLK_CYCLES) begin
                write_entry_counter <= 0;
                state <= RESET;
@@ -119,7 +146,6 @@ module cgol_logic(
          end
 
          RESET: begin
-            cgol_cell_i_local_game_board <= 0;
             if (current_cell == 6'b111111) begin // last cell
                current_cell <= 0;
                if (i_state_top == PROCESS_GAME_STATE) begin

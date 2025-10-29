@@ -166,66 +166,100 @@ module top (
         .o_led_matrix               (o_led_matrix)
     );
 
-    always_ff @(posedge clk) begin
-        // Top State Machine + Switch Net Drivers
+    // Top State Machine + Switch Net Drivers
+    always_comb begin
         case (state_top)
             PROCESS_GAME_STATE: begin
-                cgol1_start_trigger <= HIGH;
-                cgol2_start_trigger <= HIGH;
-                cgol3_start_trigger <= HIGH;
-                outctrl_start_trigger <= LOW;
+                cgol1_start_trigger = HIGH;
+                cgol2_start_trigger = HIGH;
+                cgol3_start_trigger = HIGH;
+                outctrl_start_trigger = LOW;
 
-                w_cgol1_memory_operation <= cgol1_memory_operation;
-                w_cgol1_memory_operation_address <= cgol1_memory_operation_address;
-                cgol1_i_data <= w_memctrl1_o_data;
+                w_cgol1_memory_operation = cgol1_memory_operation;
+                w_cgol1_memory_operation_address = cgol1_memory_operation_address;
+                cgol1_i_data = w_memctrl1_o_data;
+                outctrl_i_data_in_1 = 0;
 
-                w_cgol2_memory_operation <= cgol2_memory_operation;
-                w_cgol2_memory_operation_address <= cgol2_memory_operation_address;
-                cgol2_i_data <= w_memctrl2_o_data;
+                w_cgol2_memory_operation = cgol2_memory_operation;
+                w_cgol2_memory_operation_address = cgol2_memory_operation_address;
+                cgol2_i_data = w_memctrl2_o_data;
+                outctrl_i_data_in_2 = 0;
 
-                w_cgol3_memory_operation <= cgol3_memory_operation;
-                w_cgol3_memory_operation_address <= cgol3_memory_operation_address;
-                cgol3_i_data <= w_memctrl3_o_data;
+                w_cgol3_memory_operation = cgol3_memory_operation;
+                w_cgol3_memory_operation_address = cgol3_memory_operation_address;
+                cgol3_i_data = w_memctrl3_o_data;
+                outctrl_i_data_in_3 = 0;
             end
 
             CYCLE_REGISTERS: begin
-                cgol1_start_trigger <= LOW;
-                cgol2_start_trigger <= LOW;
-                cgol3_start_trigger <= LOW;
-                outctrl_start_trigger <= LOW;
+                cgol1_start_trigger = LOW;
+                cgol2_start_trigger = LOW;
+                cgol3_start_trigger = LOW;
+                outctrl_start_trigger = LOW;
 
-                w_cgol1_memory_operation <= CYCLE_REG;
-                w_cgol2_memory_operation <= CYCLE_REG;
-                w_cgol3_memory_operation <= CYCLE_REG;
+                w_cgol1_memory_operation = CYCLE_REG;
+                w_cgol1_memory_operation_address = 0;
+                cgol1_i_data = w_memctrl1_o_data;
+                outctrl_i_data_in_1 = 0;
+
+                w_cgol2_memory_operation = CYCLE_REG;
+                w_cgol2_memory_operation_address = 0;
+                cgol2_i_data = w_memctrl2_o_data;
+                outctrl_i_data_in_2 = 0;
+
+                w_cgol3_memory_operation = CYCLE_REG;
+                w_cgol3_memory_operation_address = 0;
+                cgol3_i_data = w_memctrl3_o_data;
+                outctrl_i_data_in_3 = 0;
             end
 
             PROCESS_OUTPUT: begin
-                cgol1_start_trigger <= LOW;
-                cgol2_start_trigger <= LOW;
-                cgol3_start_trigger <= LOW;
-                outctrl_start_trigger <= HIGH;
+                cgol1_start_trigger = LOW;
+                cgol2_start_trigger = LOW;
+                cgol3_start_trigger = LOW;
+                outctrl_start_trigger = HIGH;
 
-                w_cgol1_memory_operation <= outctrl_memory_operation;
-                w_cgol1_memory_operation_address <= outctrl_memory_operation_address;
-                outctrl_i_data_in_1 <= w_memctrl1_o_data;
+                w_cgol1_memory_operation = outctrl_memory_operation;
+                w_cgol1_memory_operation_address = outctrl_memory_operation_address;
+                cgol1_i_data = 0;
+                outctrl_i_data_in_1 = w_memctrl1_o_data;
 
-                w_cgol2_memory_operation <= outctrl_memory_operation;
-                w_cgol2_memory_operation_address <= outctrl_memory_operation_address;
-                outctrl_i_data_in_2 <= w_memctrl2_o_data;
+                w_cgol2_memory_operation = outctrl_memory_operation;
+                w_cgol2_memory_operation_address = outctrl_memory_operation_address;
+                cgol2_i_data = 0;
+                outctrl_i_data_in_2 = w_memctrl2_o_data;
 
-                w_cgol3_memory_operation <= outctrl_memory_operation;
-                w_cgol3_memory_operation_address <= outctrl_memory_operation_address;
-                outctrl_i_data_in_3 <= w_memctrl3_o_data;
+                w_cgol3_memory_operation = outctrl_memory_operation;
+                w_cgol3_memory_operation_address = outctrl_memory_operation_address;
+                cgol3_i_data = 0;
+                outctrl_i_data_in_3 = w_memctrl3_o_data;
             end
 
             PAUSE: begin
-                cgol1_start_trigger <= LOW;
-                cgol2_start_trigger <= LOW;
-                cgol3_start_trigger <= LOW;
-                outctrl_start_trigger <= LOW;
+                cgol1_start_trigger = LOW;
+                cgol2_start_trigger = LOW;
+                cgol3_start_trigger = LOW;
+                outctrl_start_trigger = LOW;
+
+                w_cgol1_memory_operation = IDLE;
+                w_cgol1_memory_operation_address = 0;
+                cgol1_i_data = w_memctrl1_o_data;
+                outctrl_i_data_in_1 = 0;
+
+                w_cgol2_memory_operation = IDLE;
+                w_cgol2_memory_operation_address = 0;
+                cgol2_i_data = w_memctrl2_o_data;
+                outctrl_i_data_in_2 = 0;
+
+                w_cgol3_memory_operation = IDLE;
+                w_cgol3_memory_operation_address = 0;
+                cgol3_i_data = w_memctrl3_o_data;
+                outctrl_i_data_in_3 = 0;
             end
         endcase
+    end
 
+    always_ff @(posedge clk) begin
         // Start Processing Data Trigger
         if (outctrl_start_trigger == HIGH && outctrl_start_trigger_save == LOW) begin
             outctrl_start <= HIGH;

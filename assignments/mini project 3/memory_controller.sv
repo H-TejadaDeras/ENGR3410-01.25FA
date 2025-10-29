@@ -41,7 +41,7 @@ module memory_controller #(
     localparam IDLE = 2'b10; // Do no operation
 
     logic read_register [0:63];
-    logic write_register [0:63];
+    logic write_register [0:64]; // 64th entry is never used; void entry essentially for combinational logic
 
     logic [5:0] address_counter = 0; // Used to transfer contents from write-only register to read-only register
 
@@ -53,7 +53,6 @@ module memory_controller #(
     always_ff @(posedge clk) begin
         case (operation)
             READ_REG: begin
-                o_data <= read_register[reg_address];
             end
 
             WRITE_REG: begin
@@ -66,6 +65,31 @@ module memory_controller #(
             end
 
             IDLE: begin
+            end
+        endcase
+    end
+
+    always_comb begin
+        case (operation)
+            READ_REG: begin
+                o_data = read_register[reg_address];
+                // write_register[7'd64] = x;
+            end
+
+            WRITE_REG: begin
+                o_data = 1'bx;
+                // write_register[reg_address] = i_data;
+            end
+
+            CYCLE_REG: begin
+                o_data = 1'bx;
+                // write_register[7'd64] = x;
+
+            end
+
+            IDLE: begin
+                o_data = 1'bx;
+                // write_register[7'd64] = x;
             end
         endcase
     end
