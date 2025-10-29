@@ -225,36 +225,6 @@ module top (
         endcase
 
         // Start Processing Data Trigger
-        // if (cgol1_start_trigger == HIGH && cgol1_start_trigger_save == LOW) begin
-        //     cgol1_i_start <= HIGH;
-        //     cgol1_start_trigger_save <= HIGH;
-        // end else if (cgol1_start_trigger == HIGH && cgol1_start_trigger_save == HIGH) begin // makes start signal 1 clk period long
-        //     cgol1_i_start <= LOW;
-        // end else if (cgol1_start_trigger == LOW) begin // start trigger low -> save low, start should already be low
-        //     cgol1_i_start <= LOW;
-        //     cgol1_start_trigger_save <= LOW;
-        // end
-
-        // if (cgol2_start_trigger == HIGH && cgol2_start_trigger_save == LOW) begin
-        //     cgol2_i_start <= HIGH;
-        //     cgol2_start_trigger_save <= HIGH;
-        // end else if (cgol2_start_trigger == HIGH && cgol2_start_trigger_save == HIGH) begin // makes start signal 1 clk period long
-        //     cgol2_i_start <= LOW;
-        // end else if (cgol2_start_trigger == LOW) begin // start trigger low -> save low, start should already be low
-        //     cgol2_i_start <= LOW;
-        //     cgol2_start_trigger_save <= LOW;
-        // end
-
-        // if (cgol3_start_trigger == HIGH && cgol3_start_trigger_save == LOW) begin
-        //     cgol3_i_start <= HIGH;
-        //     cgol3_start_trigger_save <= HIGH;
-        // end else if (cgol3_start_trigger == HIGH && cgol3_start_trigger_save == HIGH) begin // makes start signal 1 clk period long
-        //     cgol3_i_start <= LOW;
-        // end else if (cgol3_start_trigger == LOW) begin // start trigger low -> save low, start should already be low
-        //     cgol3_i_start <= LOW;
-        //     cgol3_start_trigger_save <= LOW;
-        // end
-
         if (outctrl_start_trigger == HIGH && outctrl_start_trigger_save == LOW) begin
             outctrl_start <= HIGH;
             outctrl_start_trigger_save <= HIGH;

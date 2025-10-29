@@ -8,7 +8,6 @@
 
 module test_bench_top;
     logic clk = 0;
-    logic SW;
     logic led_matrix_input;
 
     top u0 (
@@ -28,3 +27,4 @@ module test_bench_top;
         clk = ~clk;
     end
 endmodule
+// `end_keywords "1800-2005" // SystemVerilog-2005
