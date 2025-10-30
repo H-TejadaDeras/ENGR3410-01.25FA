@@ -26,5 +26,18 @@ module test_bench_top;
         #2
         clk = ~clk;
     end
+
+    // Display Game State
+    always @(posedge clk) begin
+        if (u0.cgol1_o_done) begin
+            for (int i = 0; i < 64; i = i + 8) begin
+                for (int j = 0; j < 8; j = j + 1) begin
+                    $write("%b", u0.u2.write_register[i + j]);
+                end
+            $display("");
+            end
+        end
+        $display("%s", ----------);
+    end
 endmodule
 // `end_keywords "1800-2005" // SystemVerilog-2005

@@ -175,57 +175,59 @@ module cgol_logic(
       end
 
       // Create Local Game Board
-      case (fetch_data_counter)
-         default: begin
-            fetch_operation_memory_operation_address <= 6'b000000;
-            local_game_board <= 9'b000000000;
-         end
+      if (state == FETCH_DATA) begin
+         case (fetch_data_counter)
+            default: begin
+               fetch_operation_memory_operation_address <= 6'b000000;
+               local_game_board <= 9'b000000000;
+            end
 
-         4'b0000: begin // Local Board Cell 0
-            fetch_operation_memory_operation_address <= {`ROW_INDEX - 3'd1, `COLUMN_INDEX - 3'd1};
-            local_game_board[0] <= i_data;
-         end
+            4'b0000: begin // Local Board Cell 0
+               fetch_operation_memory_operation_address <= {`ROW_INDEX - 3'd1, `COLUMN_INDEX - 3'd1};
+               local_game_board[0] <= i_data;
+            end
 
-         4'b0001: begin // Local Board Cell 1
-            fetch_operation_memory_operation_address <= {`ROW_INDEX - 3'd1, `COLUMN_INDEX};
-            local_game_board[1] <= i_data;
-         end
+            4'b0001: begin // Local Board Cell 1
+               fetch_operation_memory_operation_address <= {`ROW_INDEX - 3'd1, `COLUMN_INDEX};
+               local_game_board[1] <= i_data;
+            end
 
-         4'b0010: begin // Local Board Cell 2
-            fetch_operation_memory_operation_address <= {`ROW_INDEX - 3'd1, `COLUMN_INDEX + 3'd1};
-            local_game_board[2] <= i_data;
-         end
+            4'b0010: begin // Local Board Cell 2
+               fetch_operation_memory_operation_address <= {`ROW_INDEX - 3'd1, `COLUMN_INDEX + 3'd1};
+               local_game_board[2] <= i_data;
+            end
 
-         4'b0011: begin // Local Board Cell 3
-            fetch_operation_memory_operation_address <= {`ROW_INDEX, `COLUMN_INDEX - 3'd1};
-            local_game_board[3] <= i_data;
-         end
+            4'b0011: begin // Local Board Cell 3
+               fetch_operation_memory_operation_address <= {`ROW_INDEX, `COLUMN_INDEX - 3'd1};
+               local_game_board[3] <= i_data;
+            end
 
-         4'b0100: begin // Local Board Cell 4
-            fetch_operation_memory_operation_address <= {`ROW_INDEX, `COLUMN_INDEX};
-            local_game_board[4] <= i_data;
-         end
+            4'b0100: begin // Local Board Cell 4
+               fetch_operation_memory_operation_address <= {`ROW_INDEX, `COLUMN_INDEX};
+               local_game_board[4] <= i_data;
+            end
 
-         4'b0101: begin // Local Board Cell 5
-            fetch_operation_memory_operation_address <= {`ROW_INDEX, `COLUMN_INDEX + 3'd1};
-            local_game_board[5] <= i_data;
-         end
+            4'b0101: begin // Local Board Cell 5
+               fetch_operation_memory_operation_address <= {`ROW_INDEX, `COLUMN_INDEX + 3'd1};
+               local_game_board[5] <= i_data;
+            end
 
-         4'b0110: begin // Local Board Cell 6
-            fetch_operation_memory_operation_address <= {`ROW_INDEX + 3'd1, `COLUMN_INDEX - 3'd1};
-            local_game_board[6] <= i_data;
-         end
+            4'b0110: begin // Local Board Cell 6
+               fetch_operation_memory_operation_address <= {`ROW_INDEX + 3'd1, `COLUMN_INDEX - 3'd1};
+               local_game_board[6] <= i_data;
+            end
 
-         4'b0111: begin // Local Board Cell 7
-            fetch_operation_memory_operation_address <= {`ROW_INDEX + 3'd1, `COLUMN_INDEX};
-            local_game_board[7] <= i_data;
-         end
+            4'b0111: begin // Local Board Cell 7
+               fetch_operation_memory_operation_address <= {`ROW_INDEX + 3'd1, `COLUMN_INDEX};
+               local_game_board[7] <= i_data;
+            end
 
-         4'b1000: begin // Local Board Cell 8
-            fetch_operation_memory_operation_address <= {`ROW_INDEX + 3'd1, `COLUMN_INDEX + 3'd1};
-            local_game_board[8] <= i_data;
-         end
-      endcase
+            4'b1000: begin // Local Board Cell 8
+               fetch_operation_memory_operation_address <= {`ROW_INDEX + 3'd1, `COLUMN_INDEX + 3'd1};
+               local_game_board[8] <= i_data;
+            end
+         endcase
+      end
    end
 
    // Calculate Cell Value at Next Stage

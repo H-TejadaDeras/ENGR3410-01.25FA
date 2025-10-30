@@ -22,7 +22,7 @@ module test_bench_memory_controller;
     localparam IDLE = 2'b10; // From memory_controller.sv
 
     parameter READ_ENTRY_CLK_CYCLES = 2;
-    parameter WRITE_ENTRY_CLK_CYCLES = 2;
+    parameter WRITE_ENTRY_CLK_CYCLES = 4;
     parameter CYCLE_REGISTERS_CLK_CYCLES = 64;
     parameter PAUSED_STATE_CLK_CYCLES = 500;
 
@@ -67,11 +67,8 @@ module test_bench_memory_controller;
     always_ff @(posedge clk) begin
         case (state)
             READ_ENTRY: begin
-                memory_operation <= READ_REG;
-                memory_operation_address <= memory_address_counter;
                 data <= o_data;
                 if (read_entry_counter >= READ_ENTRY_CLK_CYCLES) begin
-                    state <= WRITE_ENTRY;
                     read_entry_counter <= 0;
                 end else begin
                     read_entry_counter <= read_entry_counter + 1;
@@ -79,15 +76,11 @@ module test_bench_memory_controller;
             end
 
             WRITE_ENTRY: begin
-                memory_operation <= WRITE_REG;
-                memory_operation_address <= memory_address_counter;
                 i_data <= ~data;
                 if (write_entry_counter >= WRITE_ENTRY_CLK_CYCLES) begin
                     write_entry_counter <= 0;
                     if (memory_address_counter >= 6'd63) begin
-                        state <= CYCLE_REGISTERS;
                     end else begin
-                        state <= READ_ENTRY;
                         memory_address_counter <= memory_address_counter + 1;
                     end
                 end else begin
@@ -96,7 +89,6 @@ module test_bench_memory_controller;
             end
 
             CYCLE_REGISTERS: begin
-                memory_operation <= CYCLE_REG;
                 if (cycle_registers_counter >= CYCLE_REGISTERS_CLK_CYCLES) begin
                     cycle_registers_counter <= 0;
                     state <= PAUSE;
@@ -108,8 +100,51 @@ module test_bench_memory_controller;
 
             PAUSE:begin
                 paused_state_counter <= paused_state_counter + 1;
+            end
+        endcase
+    end
+
+    always_comb begin
+        case (state)
+            READ_ENTRY: begin
+                memory_operation = READ_REG;
+                memory_operation_address = memory_address_counter;
+
+                if (read_entry_counter >= READ_ENTRY_CLK_CYCLES) begin
+                    state = WRITE_ENTRY;
+                end
+            end
+
+            WRITE_ENTRY: begin
+                memory_operation = WRITE_REG;
+                memory_operation_address = memory_address_counter;
+
+                if (write_entry_counter >= WRITE_ENTRY_CLK_CYCLES) begin
+                    if (memory_address_counter >= 6'd63) begin
+                        state = CYCLE_REGISTERS;
+                    end else begin
+                        state = READ_ENTRY;
+                    end
+                end
+            end
+
+            CYCLE_REGISTERS: begin
+                memory_operation = CYCLE_REG;
+                memory_operation_address = 0;
+
+                if (cycle_registers_counter >= CYCLE_REGISTERS_CLK_CYCLES) begin
+                    state = PAUSE;
+                end else begin
+                    state = CYCLE_REGISTERS;
+                end
+            end
+
+            PAUSE: begin
+                memory_operation = IDLE;
+                memory_operation_address = 0;
+
                 if (paused_state_counter >= PAUSED_STATE_CLK_CYCLES) begin
-                    state <= READ_ENTRY;
+                    state = READ_ENTRY;
                 end
             end
         endcase
