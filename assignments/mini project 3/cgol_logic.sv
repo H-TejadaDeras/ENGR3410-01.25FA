@@ -43,10 +43,11 @@ module cgol_logic(
    localparam HIGH = 1'b1;
    localparam LOW = 1'b0;
 
-   localparam FETCH_DATA = 2'b00;
-   localparam PROCESS_DATA = 2'b01;
-   localparam SAVE_DATA = 2'b10;
-   localparam RESET = 2'b11;
+   localparam FETCH_DATA = 3'b000;
+   localparam PROCESS_DATA = 3'b001;
+   localparam SAVE_DATA = 3'b010;
+   localparam RESET = 3'b011;
+   localparam IDLE = 3'b100;
 
    localparam PROCESS_GAME_STATE = 2'b00; // cgol_logic module active (from top.sv)
    localparam CYCLE_REGISTERS = 2'b01; // cgol_logic module inactive (from top.sv)
@@ -55,7 +56,7 @@ module cgol_logic(
 
    localparam READ_REG = 2'b00; // Read from read-only register (from memory_controller.sv)
    localparam WRITE_REG = 2'b01; // Write to write-only register (from memory_controller.sv)
-   localparam IDLE = 2'b10; // Do no operation (from memory_controller.sv)
+   localparam IDLE_REG = 2'b10; // Do no operation (from memory_controller.sv)
 
    localparam READ_ENTRY_CLK_CYCLES = 4;
    localparam PROCESS_DATA_CLK_CYCLES = 4;
@@ -63,7 +64,7 @@ module cgol_logic(
 
    logic [5:0] current_cell = 6'b111111; // Used to keep track of which is the current cell being simulated; initialized as 5'b11111 to prevent initialization reset from immediately starting fetch sequence
    logic [8:0] local_game_board = 0;
-   logic [1:0] state = RESET; // to start initially in a fresh, reset state
+   logic [2:0] state = IDLE;
 
    logic [3:0] fetch_data_counter = 0; // Counter used to keep track of which data has been fetched
    logic [$clog2(READ_ENTRY_CLK_CYCLES):0] read_entry_counter = 0;
@@ -81,6 +82,13 @@ module cgol_logic(
    // Memory Controller Interface
    always_comb begin
       case (state)
+         default: begin
+            memory_operation = IDLE_REG;
+            memory_operation_address = 0;
+            o_data = 1'bx;
+            cgol_cell_i_local_game_board = 0;
+         end
+
          FETCH_DATA: begin
             memory_operation = READ_REG;
             memory_operation_address = fetch_operation_memory_operation_address;
@@ -89,7 +97,7 @@ module cgol_logic(
          end
 
          PROCESS_DATA: begin
-            memory_operation = IDLE;
+            memory_operation = IDLE_REG;
             memory_operation_address = 0;
             o_data = 1'bx;
             cgol_cell_i_local_game_board = local_game_board;
@@ -103,7 +111,14 @@ module cgol_logic(
          end
 
          RESET: begin
-            memory_operation = IDLE;
+            memory_operation = IDLE_REG;
+            memory_operation_address = 0;
+            o_data = 1'bx;
+            cgol_cell_i_local_game_board = 0;
+         end
+
+         IDLE: begin
+            memory_operation = IDLE_REG;
             memory_operation_address = 0;
             o_data = 1'bx;
             cgol_cell_i_local_game_board = 0;
@@ -113,55 +128,61 @@ module cgol_logic(
 
    always_ff @(posedge clk) begin
       // Main State Machine
-      case (state)
-         FETCH_DATA: begin
-            if (read_entry_counter >= READ_ENTRY_CLK_CYCLES) begin
-               fetch_data_counter <= fetch_data_counter + 1;
-               read_entry_counter <= 0;
-                  if (fetch_data_counter >= 4'b1000) begin // Got last local game board cell entry
-                     fetch_data_counter <= 0;
-                     state <= PROCESS_DATA;
-                  end
-            end else begin
-               read_entry_counter <= read_entry_counter + 1;
+      if (i_state_top == PROCESS_GAME_STATE) begin
+        case (state)
+            FETCH_DATA: begin
+                if (read_entry_counter >= READ_ENTRY_CLK_CYCLES) begin
+                fetch_data_counter <= fetch_data_counter + 1;
+                read_entry_counter <= 0;
+                    if (fetch_data_counter >= 4'b1000) begin // Got last local game board cell entry
+                        fetch_data_counter <= 0;
+                        state <= PROCESS_DATA;
+                    end
+                end else begin
+                read_entry_counter <= read_entry_counter + 1;
+                end
             end
-         end
 
-         PROCESS_DATA: begin
-            if (process_data_counter >= PROCESS_DATA_CLK_CYCLES) begin
-               process_data_counter <= 0;
-               state <= SAVE_DATA;
-            end else begin
-               process_data_counter <= process_data_counter + 1;
+            PROCESS_DATA: begin
+                if (process_data_counter >= PROCESS_DATA_CLK_CYCLES) begin
+                process_data_counter <= 0;
+                state <= SAVE_DATA;
+                end else begin
+                process_data_counter <= process_data_counter + 1;
+                end
             end
-         end
 
-         SAVE_DATA: begin
-            if (write_entry_counter >= WRITE_ENTRY_CLK_CYCLES) begin
-               write_entry_counter <= 0;
-               state <= RESET;
-            end else begin
-               write_entry_counter <= write_entry_counter + 1;
+            SAVE_DATA: begin
+                if (write_entry_counter >= WRITE_ENTRY_CLK_CYCLES) begin
+                write_entry_counter <= 0;
+                state <= RESET;
+                end else begin
+                write_entry_counter <= write_entry_counter + 1;
+                end
             end
-         end
 
-         RESET: begin
-            if (current_cell == 6'b111111) begin // last cell
-               current_cell <= 0;
-               if (i_state_top == PROCESS_GAME_STATE) begin
-                  o_done_trigger <= HIGH; // Send done signal
-               end
-               state <= RESET;
-            end else begin
-               // Start Logic
-               if (i_state_top == PROCESS_GAME_STATE) begin
-                  current_cell <= current_cell + 1;
-                  o_done_trigger <= LOW;
-                  state <= FETCH_DATA;
-               end
+            RESET: begin
+                if (current_cell == 6'b111111 && i_state_top == PROCESS_GAME_STATE) begin // last cell
+                    o_done_trigger <= HIGH; // Send done signal
+                    state <= IDLE;
+                end else begin
+                current_cell <= current_cell + 1;
+                state <= FETCH_DATA;
+                end
             end
-         end
-      endcase
+
+            IDLE: begin
+                if (i_state_top == PROCESS_GAME_STATE && o_done == LOW) begin
+                // Start Logic
+                current_cell <= 0;
+                o_done_trigger <= LOW;
+                state <= FETCH_DATA;
+                end else begin
+                    state <= IDLE;
+                end
+            end
+        endcase
+      end
 
       // Done Signal Logic
       if (o_done_trigger == HIGH && o_done_trigger_save == LOW) begin
