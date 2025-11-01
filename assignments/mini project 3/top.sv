@@ -105,7 +105,7 @@ module top (
     );
     
     memory_controller #(
-        .MEM_INIT_FILE  ("cgol_seeds/toad_tester.bin")
+        .MEM_INIT_FILE  ("cgol_seeds/default_seed.bin")
     ) u2 (
         .clk            (clk),
         .operation      (w_cgol1_memory_operation),
@@ -125,7 +125,7 @@ module top (
     );
     
     memory_controller #(
-        .MEM_INIT_FILE  ("cgol_seeds/toad_tester.bin")
+        .MEM_INIT_FILE  ("cgol_seeds/default_seed.bin")
     ) u4 (
         .clk            (clk),
         .operation      (w_cgol2_memory_operation),
@@ -145,7 +145,7 @@ module top (
     );
     
     memory_controller #(
-        .MEM_INIT_FILE  ("cgol_seeds/toad_tester.bin")
+        .MEM_INIT_FILE  ("cgol_seeds/default_seed.bin")
     ) u6 (
         .clk            (clk),
         .operation      (w_cgol3_memory_operation),
