@@ -49,16 +49,22 @@ module output_controller(
     localparam IDLE_DRIVER = 1'b0; // From ws2812b.sv
     localparam TRANSMITTING = 1'b1; // From ws2812b.sv
 
+    localparam GET_CELL_STATE_CLK_CYCLES = 4;
+    localparam LAST_TRANSMIT_BIT_CLK_CYCLES = 7;
+
     logic [23:0] shift_reg = 23'b0;
     logic [4:0] shift_reg_counter = 0;
     logic [5:0] current_cell = 0;
     logic [1:0] state_output = IDLE;
+    logic [$clog2(GET_CELL_STATE_CLK_CYCLES):0] get_cell_state_counter = 0;
+    logic [$clog2(LAST_TRANSMIT_BIT_CLK_CYCLES):0] last_transmit_bit_counter = 0; // Used to delay next transmit to allow proper transmit of last cell
 
     // Net Declarations
     logic transmit_command;
     logic shift_reg_command;
     logic o_done_trigger;
     logic o_done_trigger_save;
+    logic last_transmit_bit_trigger;
 
     // Module Declarations
     ws2812b u8 (
@@ -76,7 +82,11 @@ module output_controller(
                 current_cell <= current_cell + 1;
                 o_memory_operation <= READ_REG;
                 transmit_command <= IDLE_DRIVER;
-                state_output <= ADD_COLOR_INFO;
+                if (get_cell_state_counter >= GET_CELL_STATE_CLK_CYCLES) begin
+                    state_output <= ADD_COLOR_INFO;
+                end else begin
+                    get_cell_state_counter <= get_cell_state_counter + 1;
+                end
             end
 
             ADD_COLOR_INFO: begin
@@ -115,26 +125,36 @@ module output_controller(
         endcase
 
         // LED Matrix Output Shift Register
-        if (shift_reg_command == HIGH) begin
-            shift_reg <= { shift_reg[22:0], 1'b0 };
-            shift_reg_counter <= shift_reg_counter + 1;
+        if (state_output == OUTPUT_DATA) begin
+            if (shift_reg_command == HIGH) begin
+                shift_reg <= { shift_reg[22:0], 1'b0 };
+                shift_reg_counter <= shift_reg_counter + 1;
+            end
         end
 
        // External Start Trigger Logic
-      if (i_start == HIGH) begin
-         state_output <= GET_CELL_STATE;
-         o_done_trigger <= LOW;
-      end
+        if (i_start == HIGH) begin
+            state_output <= GET_CELL_STATE;
+            o_done_trigger <= LOW;
+        end
 
         // Update Current Cell and State Machine State
         if (shift_reg_counter >= 5'd23) begin
+            last_transmit_bit_trigger <= HIGH;
             shift_reg_counter <= 0;
-            if (current_cell == 6'b111111) begin
+        end
+
+        if (last_transmit_bit_trigger && last_transmit_bit_counter <= LAST_TRANSMIT_BIT_CLK_CYCLES) begin
+            last_transmit_bit_counter <= last_transmit_bit_counter + 1;
+        end else if (last_transmit_bit_trigger && last_transmit_bit_counter >= LAST_TRANSMIT_BIT_CLK_CYCLES && current_cell == 6'b111111) begin
                 state_output <= IDLE;
                 o_done_trigger <= HIGH;
-            end else begin
+                last_transmit_bit_counter <= 0;
+                last_transmit_bit_trigger <= LOW;
+        end else if (last_transmit_bit_trigger && last_transmit_bit_counter >= LAST_TRANSMIT_BIT_CLK_CYCLES && current_cell != 6'b111111) begin
                 state_output <= GET_CELL_STATE;
-            end
+                last_transmit_bit_counter <= 0;
+                last_transmit_bit_trigger <= LOW;
         end
 
         // Done Signal Logic
