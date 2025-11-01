@@ -44,8 +44,6 @@ module top (
     // Net Declarations
     logic o_led_matrix;
 
-    logic cgol1_start_trigger = LOW;
-    logic cgol1_start_trigger_save = LOW;
     logic cgol1_i_data;
     logic cgol1_i_start;
     logic [1:0] cgol1_memory_operation;
@@ -57,8 +55,6 @@ module top (
     logic [5:0] w_cgol1_memory_operation_address; // After Top State Machine + Mux to memory_controller module
     logic w_memctrl1_o_data; // Output from memory_controller module before Top State Machine + Mux
 
-    logic cgol2_start_trigger = LOW;
-    logic cgol2_start_trigger_save = LOW;
     logic cgol2_i_data;
     logic cgol2_i_start;
     logic [1:0] cgol2_memory_operation;
@@ -70,8 +66,6 @@ module top (
     logic [5:0] w_cgol2_memory_operation_address; // After Top State Machine + Mux to memory_controller module
     logic w_memctrl2_o_data; // Output from memory_controller module before Top State Machine + Mux
 
-    logic cgol3_start_trigger = LOW;
-    logic cgol3_start_trigger_save = LOW;
     logic cgol3_i_data;
     logic cgol3_i_start;
     logic [1:0] cgol3_memory_operation;
@@ -97,7 +91,7 @@ module top (
     cgol_logic u1 (
         .clk                        (clk),
         .i_data                     (cgol1_i_data),
-        .i_state_top                    (state_top),
+        .i_state_top                (state_top),
         .memory_operation           (cgol1_memory_operation),
         .memory_operation_address   (cgol1_memory_operation_address),
         .o_data                     (cgol1_o_data),
@@ -117,7 +111,7 @@ module top (
     cgol_logic u3 (
         .clk                        (clk),
         .i_data                     (cgol2_i_data),
-        .i_state_top                    (state_top),
+        .i_state_top                (state_top),
         .memory_operation           (cgol2_memory_operation),
         .memory_operation_address   (cgol2_memory_operation_address),
         .o_data                     (cgol2_o_data),
@@ -137,7 +131,7 @@ module top (
     cgol_logic u5 (
         .clk                        (clk),
         .i_data                     (cgol3_i_data),
-        .i_state_top                    (state_top),
+        .i_state_top                (state_top),
         .memory_operation           (cgol3_memory_operation),
         .memory_operation_address   (cgol3_memory_operation_address),
         .o_data                     (cgol3_o_data),
@@ -170,9 +164,6 @@ module top (
     always_comb begin
         case (state_top)
             PROCESS_GAME_STATE: begin
-                cgol1_start_trigger = HIGH;
-                cgol2_start_trigger = HIGH;
-                cgol3_start_trigger = HIGH;
                 outctrl_start_trigger = LOW;
 
                 w_cgol1_memory_operation = cgol1_memory_operation;
@@ -192,9 +183,6 @@ module top (
             end
 
             CYCLE_REGISTERS: begin
-                cgol1_start_trigger = LOW;
-                cgol2_start_trigger = LOW;
-                cgol3_start_trigger = LOW;
                 outctrl_start_trigger = LOW;
 
                 w_cgol1_memory_operation = CYCLE_REG;
@@ -214,9 +202,6 @@ module top (
             end
 
             PROCESS_OUTPUT: begin
-                cgol1_start_trigger = LOW;
-                cgol2_start_trigger = LOW;
-                cgol3_start_trigger = LOW;
                 outctrl_start_trigger = HIGH;
 
                 w_cgol1_memory_operation = outctrl_memory_operation;
@@ -236,9 +221,6 @@ module top (
             end
 
             PAUSE: begin
-                cgol1_start_trigger = LOW;
-                cgol2_start_trigger = LOW;
-                cgol3_start_trigger = LOW;
                 outctrl_start_trigger = LOW;
 
                 w_cgol1_memory_operation = IDLE;
