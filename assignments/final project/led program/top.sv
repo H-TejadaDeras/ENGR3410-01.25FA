@@ -37,7 +37,9 @@ module top (
     logic [31:0] increment = 32'b0;
 
     logic [2:0] w_funct3_memory;
+    logic [2:0] w_funct3_memory_mem_ops;
     logic w_dmem_wren;
+    logic w_dmem_wren_mem_ops;
     logic [31:0] w_dmem_address;
     logic [31:0] w_dmem_data_in;
     logic [31:0] w_imem_address;
@@ -127,7 +129,16 @@ module top (
     /////////////////////////// Processor State Machine ///////////////////////
     always_comb begin
         case (processor_state)
+            default: begin
+                current_instruction = w_imem_data_out;
+                w_dmem_wren = LOW;
+                w_funct3_memory = 3'b010;
+                w_imem_address = pc[31:0];
+                instruction_completed = LOW;
+            end
+
             FETCH_INSTRUCTION: begin
+                current_instruction = w_imem_data_out;
                 w_dmem_wren = LOW;
                 w_funct3_memory = 3'b010;
                 w_imem_address = pc[31:0]; // Get instr. address from pc
@@ -136,16 +147,25 @@ module top (
 
             FETCH_REGISTERS: begin
                 current_instruction = w_imem_data_out; // Save current instruction for use by decoder
+                w_dmem_wren = LOW;
+                w_funct3_memory = 3'b010;
+                w_imem_address = pc[31:0];
                 instruction_completed = LOW;
             end
 
             EXECUTE_INSTRUCTION: begin
+                current_instruction = w_imem_data_out;
+                w_dmem_wren = w_dmem_wren_mem_ops;
+                w_funct3_memory = w_funct3_memory_mem_ops;
+                w_imem_address = pc[31:0];
                 instruction_completed = LOW;
             end
 
-            WRITE_BACK: begin
-                // Update pc
-                // Store Word
+            WRITE_BACK: begin // Update PC and Store Word
+                current_instruction = w_imem_data_out;
+                w_dmem_wren = LOW;
+                w_funct3_memory = 3'b010;
+                w_imem_address = pc[31:0];
                 instruction_completed = HIGH;
             end
         endcase
@@ -181,21 +201,21 @@ module top (
         if (processor_state == EXECUTE_INSTRUCTION) begin
             case (opcode)
                 default: begin
-                    w_dmem_wren <= LOW;
-                    w_funct3_memory <= 3'b0;
+                    w_dmem_wren_mem_ops <= LOW;
+                    w_funct3_memory_mem_ops <= 3'b0;
                     w_dmem_address <= 32'b0;
                 end
 
                 7'b0000011: begin // lb, lh, lw, lbu, lhu
-                    w_dmem_wren <= LOW; // Read Operation
-                    w_funct3_memory <= w_funct3_decoder;
+                    w_dmem_wren_mem_ops <= LOW; // Read Operation
+                    w_funct3_memory_mem_ops <= w_funct3_decoder;
                     w_dmem_address <= registers[rs1] + w_imm_i_decoder;
                     registers[rd] <= w_dmem_data_out;
                 end
 
                 7'b0100011: begin // sb, sh, sw
-                    w_dmem_wren <= HIGH; // Write Operation
-                    w_funct3_memory <= w_funct3_decoder;
+                    w_dmem_wren_mem_ops <= HIGH; // Write Operation
+                    w_funct3_memory_mem_ops <= w_funct3_decoder;
                     w_dmem_address <= registers[rs1] + w_imm_s_decoder;
                     w_dmem_data_in <= registers[rs2];
                 end

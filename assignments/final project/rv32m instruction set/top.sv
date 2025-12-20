@@ -1,6 +1,6 @@
 /*
- *  RISC-V Processor with RV32I Instructions
- *  Anika Mahesh + Henry Tejada Deras
+ *  RISC-V Processor with RV32I and RV32M Instructions
+ *  Henry Tejada Deras + Anika Mahesh - 12-11-2025
  */
 
 `include "memory.sv"
@@ -69,8 +69,8 @@ module top (
 
     logic [2:0] processor_state = FETCH_INSTRUCTION;
 
-    parameter EXECUTE_INSTRUCTION_CLK_CYCLES = 2 - 1; // Zero-based indexing
-    logic [$clog2(EXECUTE_INSTRUCTION_CLK_CYCLES):0] execute_instruction_counter = 0;
+    logic execute_instruction_clk_cycles = 2 - 1; // Zero-based indexing
+    logic [3:0] execute_instruction_counter = 0;
 
     // Register Declarations
     logic [31:0][31:0] registers = 0;
@@ -79,8 +79,8 @@ module top (
 
     // Module Declarations
     memory #(
-        .IMEM_INIT_FILE_PREFIX  ("tester_memories/misc_instruct_test_"),
-        .DMEM_INIT_FILE_PREFIX  ("tester_memories/tester_dmem_")
+        .IMEM_INIT_FILE_PREFIX  ("tester_memories/mult_instruct_test_"),
+        .DMEM_INIT_FILE_PREFIX  ("tester_memories/tester_mult_dmem_")
     ) u1 (
         .clk            (clk), 
         .funct3         (w_funct3_memory), 
@@ -162,7 +162,7 @@ module top (
             end
 
             EXECUTE_INSTRUCTION: begin
-                if (execute_instruction_counter >= EXECUTE_INSTRUCTION_CLK_CYCLES) begin
+                if (execute_instruction_counter >= execute_instruction_clk_cycles) begin
                     processor_state <= WRITE_BACK;
                     execute_instruction_counter = 0;
                 end else begin
@@ -175,6 +175,25 @@ module top (
             end
         endcase
     end
+
+    // Determine Execute Instructions Clock Cycles Amount
+    always_comb begin
+        if (processor_state == FETCH_REGISTERS) begin
+            case (opcode)
+                default: begin
+                    execute_instruction_clk_cycles = 2 - 1; // Zero Based Indexing
+                end
+
+                7'b0110011: begin // Register ALU Operations
+                    if (w_funct7_decoder == 7'b0000001) begin
+                        execute_instruction_clk_cycles = 4 - 1; // Zero Based Indexing
+                    end else begin
+                        execute_instruction_clk_cycles = 2 - 1; // Zero Based Indexing
+                    end
+                end
+            endcase
+        end
+    end  
 
     /////////////////////// Data Memory Operations ////////////////////////////
     always_ff @(negedge clk) begin

@@ -1,8 +1,8 @@
 /*
  *  Instruction Decoder Module
- *  Anika Mahesh
+ *  Anika Mahesh + Henry Tejada Deras
  *  
- *  Decodes RISC-V RV32I Instructions
+ *  Decodes RISC-V RV32I and RV32M Instructions
  */
 
 module decoder (
